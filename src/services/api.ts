@@ -1,6 +1,6 @@
 // API Service Layer - Centralized configuration and methods for all API calls
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = 'https://hotel-booking-system-backend-0tc6.onrender.com/api';
 
 interface ApiResponse<T = Record<string, unknown>> {
   success: boolean;
