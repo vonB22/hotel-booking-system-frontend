@@ -2,8 +2,7 @@ import { useState, useContext, useEffect } from 'react';
 import { NavigationContext } from '../../../App';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../../Components/Button';
-import Modal from '../../../Components/Modal';
-import { Plus, Eye, Edit, Trash2, Shield } from 'lucide-react';
+import { Plus, Eye, Edit, Trash2, Shield, X } from 'lucide-react';
 import apiService from '../../../services/api';
 
 interface Role {
@@ -22,6 +21,7 @@ export default function Index() {
   const [error, setError] = useState<string>('');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | number | null>(null);
+  const [deleteError, setDeleteError] = useState<string>('');
 
   useEffect(() => {
     fetchRoles();
@@ -72,12 +72,18 @@ export default function Index() {
   const confirmDelete = async () => {
     if (!selectedId) return;
     try {
-      await apiService.deleteRole(selectedId);
-      setIsDeleteModalOpen(false);
-      setSelectedId(null);
-      fetchRoles();
+      setDeleteError('');
+      const response = await apiService.deleteRole(selectedId);
+      if (response.success) {
+        setIsDeleteModalOpen(false);
+        setSelectedId(null);
+        fetchRoles();
+      } else {
+        setDeleteError(response.message || 'Failed to delete role');
+      }
     } catch (err: any) {
       console.error('Failed to delete role:', err);
+      setDeleteError(err.message || err.error || 'Failed to delete role');
     }
   };
 
@@ -163,16 +169,55 @@ export default function Index() {
         </div>
       )}
 
-      <Modal 
-        isOpen={isDeleteModalOpen} 
-        onClose={() => setIsDeleteModalOpen(false)} 
-        title="Delete Role" 
-        onConfirm={confirmDelete} 
-        confirmText="Delete" 
-        variant="danger"
-      >
-        <p>Are you sure you want to delete this role? This action cannot be undone.</p>
-      </Modal>
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-lg max-w-sm w-full">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">Delete Role</h2>
+                <button
+                  onClick={() => {
+                    setIsDeleteModalOpen(false);
+                    setDeleteError('');
+                  }}
+                  className="p-1 hover:bg-gray-100 rounded-lg"
+                  aria-label="Close"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              {deleteError && (
+                <div className="p-3 mb-4 bg-red-100 text-red-700 rounded-lg">
+                  <p className="text-sm">{deleteError}</p>
+                </div>
+              )}
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to delete this role? This action cannot be undone.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsDeleteModalOpen(false);
+                    setDeleteError('');
+                  }}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={confirmDelete}
+                  className="flex-1 bg-red-600 hover:bg-red-700"
+                >
+                  Delete
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -2,8 +2,7 @@ import { useState, useContext, useEffect } from 'react';
 import { NavigationContext } from '../../../App';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../../Components/Button';
-import Modal from '../../../Components/Modal';
-import { Plus, Eye, Edit, Trash2, Search } from 'lucide-react';
+import { Plus, Eye, Edit, Trash2, Search, X } from 'lucide-react';
 import apiService from '../../../services/api';
 
 interface User {
@@ -175,8 +174,8 @@ export default function Index() {
           </div>
 
           {/* Table */}
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="w-full">
+          <div className="bg-white rounded-lg shadow overflow-x-auto">
+            <table className="w-full min-w-max">
               <thead className="bg-gray-50 border-b">
                 <tr>
                   <th className="px-6 py-3 text-left text-sm font-medium">Name</th>
@@ -268,17 +267,44 @@ export default function Index() {
             </table>
           </div>
 
-          {/* Delete Modal */}
-          <Modal
-            isOpen={isDeleteModalOpen}
-            onClose={() => setIsDeleteModalOpen(false)}
-            title="Delete User"
-            onConfirm={confirmDelete}
-            confirmText="Delete"
-            variant="danger"
-          >
-            <p>Are you sure you want to delete this user? This action cannot be undone.</p>
-          </Modal>
+          {/* Delete Confirmation Modal */}
+          {isDeleteModalOpen && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-lg shadow-lg max-w-sm w-full">
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-semibold text-gray-900">Delete User</h2>
+                    <button
+                      onClick={() => setIsDeleteModalOpen(false)}
+                      className="p-1 hover:bg-gray-100 rounded-lg"
+                      aria-label="Close"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <p className="text-gray-600 mb-6">
+                    Are you sure you want to delete this user? This action cannot be undone.
+                  </p>
+                  <div className="flex gap-3 justify-end">
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsDeleteModalOpen(false)}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="primary"
+                      onClick={confirmDelete}
+                      className="flex-1 bg-red-600 hover:bg-red-700"
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>

@@ -68,20 +68,25 @@ export default function Edit() {
     setIsSubmitting(true);
 
     try {
-      const response = await apiService.updateBooking(id, {
+      const submitData = {
         check_in: formData.check_in,
         check_out: formData.check_out,
         guests: formData.guests,
         status: formData.status,
         notes: formData.notes,
-      });
+      };
 
+      console.log('Submitting booking update:', submitData);
+      const response = await apiService.updateBooking(id, submitData as any);
+
+      console.log('Update response:', response);
       if (response.success) {
         navigate('/bookings');
       } else {
         setError(response.message || 'Failed to update booking');
       }
     } catch (err: any) {
+      console.error('Update error:', err);
       if (err.errors) {
         setErrors(err.errors);
       } else {

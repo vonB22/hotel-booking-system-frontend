@@ -52,21 +52,25 @@ export default function Create() {
     setIsLoading(true);
 
     try {
-      const response = await apiService.createBooking({
+      const submitData = {
         product_id: formData.product_id ? parseInt(formData.product_id) : undefined,
         check_in: formData.check_in,
         check_out: formData.check_out,
         guests: parseInt(formData.guests) || 1,
-        price: formData.price ? parseFloat(formData.price) : undefined,
         notes: formData.notes,
-      });
+      };
 
+      console.log('Submitting booking:', submitData);
+      const response = await apiService.createBooking(submitData as any);
+
+      console.log('Create response:', response);
       if (response.success) {
         navigate('/bookings');
       } else {
         setError(response.message || 'Failed to create booking');
       }
     } catch (err: any) {
+      console.error('Create error:', err);
       if (err.errors) {
         setErrors(err.errors);
       } else {

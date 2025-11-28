@@ -2,8 +2,7 @@ import { useState, useContext, useEffect } from 'react';
 import { NavigationContext } from '../../../App';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../../Components/Button';
-import Modal from '../../../Components/Modal';
-import { Plus, Eye, Edit, Trash2, Search } from 'lucide-react';
+import { Plus, Eye, Edit, Trash2, Search, X } from 'lucide-react';
 import apiService from '../../../services/api';
 
 interface Booking {
@@ -218,22 +217,54 @@ export default function Index() {
 
       {/* Empty State */}
       {!isLoading && filteredBookings.length === 0 && !error && (
-        <div className="text-center py-12">
-          <p className="text-gray-600">No bookings found</p>
+        <div className="bg-white rounded-lg shadow p-12 text-center">
+          <p className="text-gray-600 text-lg">No bookings found</p>
+          {searchTerm || statusFilter ? (
+            <p className="text-gray-500 text-sm mt-2">Try adjusting your search or filter criteria</p>
+          ) : (
+            <p className="text-gray-500 text-sm mt-2">Create your first booking to get started</p>
+          )}
         </div>
       )}
 
-      {/* Delete Modal */}
-      <Modal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        title="Delete Booking"
-        onConfirm={confirmDelete}
-        confirmText="Delete"
-        variant="danger"
-      >
-        <p>Are you sure you want to delete this booking? This action cannot be undone.</p>
-      </Modal>
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-lg max-w-sm w-full">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">Delete Booking</h2>
+                <button
+                  onClick={() => setIsDeleteModalOpen(false)}
+                  className="p-1 hover:bg-gray-100 rounded-lg"
+                  aria-label="Close"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to delete this booking? This action cannot be undone.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsDeleteModalOpen(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={confirmDelete}
+                  className="flex-1 bg-red-600 hover:bg-red-700"
+                >
+                  Delete
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
