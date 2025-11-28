@@ -84,7 +84,7 @@ export default function Edit() {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
-        roles: formData.role ? [formData.role] : [],
+        role: formData.role,
         status: formData.status,
       };
       console.log('Submitting user data:', submitData);

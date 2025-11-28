@@ -121,6 +121,40 @@ export default function Edit() {
               </div>
             </div>
 
+            <div>
+              <h3 className="text-lg mb-4 border-b pb-2">Permissions</h3>
+              <div className="space-y-4">
+                {['Bookings', 'Hotels', 'Users', 'Roles'].map((module) => (
+                  <div key={module}>
+                    <h4 className="mb-2 font-medium">{module}</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {['view', 'create', 'edit', 'delete'].map((action) => {
+                        const permissionName = `${module.toLowerCase()}.${action}`;
+                        const isChecked = formData.permissions.includes(permissionName);
+                        return (
+                          <label key={action} className="flex items-center gap-2 cursor-pointer">
+                            <input 
+                              type="checkbox" 
+                              checked={isChecked}
+                              onChange={(e) => {
+                                const newPermissions = e.target.checked 
+                                  ? [...formData.permissions, permissionName]
+                                  : formData.permissions.filter(p => p !== permissionName);
+                                setFormData({ ...formData, permissions: newPermissions });
+                              }}
+                              className="rounded"
+                              disabled={isSubmitting}
+                            />
+                            <span className="text-sm capitalize">{action}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div className="flex gap-4 justify-end pt-4 border-t">
               <Button variant="outline" onClick={() => navigate('/roles')} type="button" disabled={isSubmitting}>Cancel</Button>
               <Button variant="primary" type="submit" disabled={isSubmitting}>{isSubmitting ? 'Updating...' : 'Update Role'}</Button>
