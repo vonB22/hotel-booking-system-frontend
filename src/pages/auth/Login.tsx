@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, Hotel, CheckCircle, ArrowRight, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, Hotel, CheckCircle, ArrowRight, AlertCircle, X } from 'lucide-react';
 import authService from '../../services/auth';
 
 export default function Login() {
@@ -363,12 +363,32 @@ export default function Login() {
 
               {/* Error Message */}
               {error && (
-                <div className="mb-4 p-3 bg-[#fee2e2] rounded-xl border-0 animate-slide-down">
-                  <div className="flex items-start gap-2">
-                    <AlertCircle className="w-5 h-5 text-[#991b1b] flex-shrink-0 mt-0.5" />
-                    <div className="flex-1">
-                      <p className="text-[#991b1b] font-semibold text-sm">Error:</p>
-                      <p className="text-[#991b1b] text-sm mt-0.5">{error}</p>
+                <div className="mb-4 p-4 bg-red-50 rounded-xl border-2 border-red-200 animate-slide-down">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 pt-0.5">
+                      <AlertCircle className="w-6 h-6 text-red-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-red-900 font-semibold text-sm mb-1">Sign In Failed</h4>
+                      <p className="text-red-700 text-sm leading-relaxed">
+                        {error.includes('password') || error.includes('401')
+                          ? 'The email or password you entered is incorrect. Please try again.'
+                          : error.includes('email') || error.includes('404')
+                          ? 'We couldn\'t find an account with this email address.'
+                          : error.includes('network') || error.includes('Network')
+                          ? 'Network connection error. Please check your internet and try again.'
+                          : error.includes('server')
+                          ? 'Server error. Please try again later.'
+                          : error}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setError('')}
+                        className="mt-2 inline-flex items-center text-xs text-red-600 hover:text-red-700 font-medium transition-colors"
+                      >
+                        <X className="w-3 h-3 mr-1" />
+                        Dismiss
+                      </button>
                     </div>
                   </div>
                 </div>

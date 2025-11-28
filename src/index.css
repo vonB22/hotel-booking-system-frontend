@@ -26,6 +26,36 @@
   --info: #3b82f6;
 }
 
+/* Dark mode styles */
+html.dark {
+  color-scheme: dark;
+  --primary: #818cf8;
+  --primary-dark: #6366f1;
+  --primary-light: #a5b4fc;
+  --secondary: #a78bfa;
+  --secondary-dark: #8b5cf6;
+  --accent: #ec4899;
+  --accent-dark: #db2777;
+  --background: #1e293b;
+  --surface: #0f172a;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
+  --border: #334155;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+}
+
+html.dark body {
+  @apply bg-slate-950 text-slate-100;
+}
+
+html.dark {
+  @apply bg-slate-950;
+}
+
 @layer base {
   html {
     @apply scroll-smooth;

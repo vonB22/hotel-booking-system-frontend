@@ -89,10 +89,14 @@ export default function Index() {
     navigate(`/hotels/${id}`);
   };
 
-  const filteredHotels = hotels.filter(hotel =>
-    hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    hotel.location.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredHotels = hotels.filter(hotel => {
+    if (!searchTerm) return true;
+    const term = searchTerm.toLowerCase();
+    return (
+      hotel.name.toLowerCase().includes(term) ||
+      hotel.location.toLowerCase().includes(term)
+    );
+  });
 
   const hotelImages = [img1, img2, img3, img4, img5, img6];
 
@@ -243,37 +247,70 @@ export default function Index() {
 
       {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-lg max-w-sm w-full">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-fade-in">
+          <style>{`
+            @keyframes fadeIn {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+            @keyframes slideScaleUp {
+              from { 
+                opacity: 0; 
+                transform: translateY(20px) scale(0.95);
+              }
+              to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1);
+              }
+            }
+            @keyframes shake {
+              0%, 100% { transform: translateX(0); }
+              25% { transform: translateX(-5px); }
+              75% { transform: translateX(5px); }
+            }
+            .animate-fade-in {
+              animation: fadeIn 0.3s ease-out;
+            }
+            .animate-modal-in {
+              animation: slideScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            .delete-icon-shake:hover {
+              animation: shake 0.4s ease-in-out;
+            }
+          `}</style>
+          <div className="bg-white rounded-lg shadow-xl max-w-sm w-full animate-modal-in border border-gray-100">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-900">Delete Hotel</h2>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center delete-icon-shake">
+                    <Trash2 className="w-5 h-5 text-red-600" />
+                  </div>
+                  <h2 className="text-lg font-semibold text-gray-900">Delete Hotel</h2>
+                </div>
                 <button
                   onClick={() => setIsDeleteModalOpen(false)}
-                  className="p-1 hover:bg-gray-100 rounded-lg"
+                  className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
                   aria-label="Close"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-5 h-5 text-gray-400 hover:text-gray-600" />
                 </button>
               </div>
-              <p className="text-gray-600 mb-6">
-                Are you sure you want to delete this hotel? This action cannot be undone.
+              <p className="text-gray-600 mb-6 leading-relaxed">
+                Are you sure you want to delete this hotel? This action cannot be undone and all associated data will be permanently removed.
               </p>
               <div className="flex gap-3 justify-end">
-                <Button
-                  variant="outline"
+                <button
                   onClick={() => setIsDeleteModalOpen(false)}
-                  className="flex-1"
+                  className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition-colors"
                 >
                   Cancel
-                </Button>
-                <Button
-                  variant="primary"
+                </button>
+                <button
                   onClick={confirmDelete}
-                  className="flex-1 bg-red-600 hover:bg-red-700"
+                  className="px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition-all transform hover:scale-105 active:scale-95"
                 >
                   Delete
-                </Button>
+                </button>
               </div>
             </div>
           </div>

@@ -269,37 +269,65 @@ export default function Index() {
 
           {/* Delete Confirmation Modal */}
           {isDeleteModalOpen && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-lg shadow-lg max-w-sm w-full">
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-fade-in">
+              <style>{`
+                @keyframes fadeIn {
+                  from {
+                    opacity: 0;
+                  }
+                  to {
+                    opacity: 1;
+                  }
+                }
+                @keyframes slideScaleUp {
+                  from {
+                    opacity: 0;
+                    transform: translateY(20px) scale(0.95);
+                  }
+                  to {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                  }
+                }
+                @keyframes shake {
+                  0%, 100% { transform: translateX(0); }
+                  10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+                  20%, 40%, 60%, 80% { transform: translateX(2px); }
+                }
+                .animate-fade-in {
+                  animation: fadeIn 0.3s ease-out;
+                }
+                .animate-modal-in {
+                  animation: slideScaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+                }
+                .delete-icon-shake:hover {
+                  animation: shake 0.5s ease-in-out;
+                }
+              `}</style>
+              <div className="bg-white rounded-lg shadow-2xl max-w-sm w-full animate-modal-in border border-gray-100">
                 <div className="p-6">
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center delete-icon-shake">
+                      <Trash2 className="w-5 h-5 text-red-600" />
+                    </div>
                     <h2 className="text-lg font-semibold text-gray-900">Delete User</h2>
-                    <button
-                      onClick={() => setIsDeleteModalOpen(false)}
-                      className="p-1 hover:bg-gray-100 rounded-lg"
-                      aria-label="Close"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
                   </div>
-                  <p className="text-gray-600 mb-6">
+                  <p className="text-gray-600 mb-6 text-sm">
                     Are you sure you want to delete this user? This action cannot be undone.
                   </p>
                   <div className="flex gap-3 justify-end">
-                    <Button
-                      variant="outline"
+                    <button
                       onClick={() => setIsDeleteModalOpen(false)}
-                      className="flex-1"
+                      className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200 font-medium"
                     >
                       Cancel
-                    </Button>
-                    <Button
-                      variant="primary"
+                    </button>
+                    <button
                       onClick={confirmDelete}
-                      className="flex-1 bg-red-600 hover:bg-red-700"
+                      className="px-4 py-2 bg-red-600 hover:bg-red-700 hover:scale-105 active:scale-95 text-white rounded-lg transition-all duration-200 font-medium"
                     >
                       Delete
-                    </Button>
+                    </button>
                   </div>
                 </div>
               </div>

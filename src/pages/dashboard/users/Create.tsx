@@ -56,7 +56,6 @@ export default function Create() {
 
   const roleOptions = [
     { value: 'Admin', label: 'Admin' },
-    { value: 'Manager', label: 'Manager' },
     { value: 'User', label: 'User' },
   ];
 

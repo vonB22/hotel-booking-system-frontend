@@ -8,7 +8,7 @@ import {
   Building2,
   Users,
   Shield,
-  BookOpen,
+  Settings,
   LogOut
 } from 'lucide-react';
 import authService from '../services/auth';
@@ -42,7 +42,7 @@ import authService from '../services/auth';
     {
       title: 'Account',
       items: [
-        { id: 'user-bookings', label: 'My Bookings', icon: BookOpen, route: '/bookings' }
+        { id: 'settings', label: 'Settings', icon: Settings, route: '/settings' }
       ]
     }
   ];

@@ -43,6 +43,7 @@ import UsersIndex from './pages/dashboard/users/Index';
 import UsersCreate from './pages/dashboard/users/Create';
 import UsersEdit from './pages/dashboard/users/Edit';
 import UsersShow from './pages/dashboard/users/Show';
+import SettingsIndex from './pages/dashboard/Settings/index';
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode; requiredRole?: string }> = ({
@@ -315,6 +316,18 @@ function AppContent() {
               <ProtectedRoute requiredRole="Admin">
                 <DashboardLayout>
                   <UsersEdit />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Settings Route - Accessible to all authenticated users */}
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <SettingsIndex />
                 </DashboardLayout>
               </ProtectedRoute>
             }

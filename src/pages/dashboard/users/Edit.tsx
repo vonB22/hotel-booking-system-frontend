@@ -150,7 +150,7 @@ export default function Edit() {
               {errors.phone && <p className="text-red-600 text-sm mt-1">{errors.phone[0]}</p>}
             </div>
             <div>
-              <FormInput label="Role" options={[{ value: 'Admin', label: 'Admin' }, { value: 'Manager', label: 'Manager' }, { value: 'User', label: 'User' }]} value={formData.role || 'User'} onChange={(e) => setFormData({ ...formData, role: e.target.value })} disabled={isSubmitting} />
+              <FormInput label="Role" options={[{ value: 'Admin', label: 'Admin' }, { value: 'User', label: 'User' }]} value={formData.role || 'User'} onChange={(e) => setFormData({ ...formData, role: e.target.value })} disabled={isSubmitting} />
               {errors.role && <p className="text-red-600 text-sm mt-1">{errors.role[0]}</p>}
             </div>
             <div>
