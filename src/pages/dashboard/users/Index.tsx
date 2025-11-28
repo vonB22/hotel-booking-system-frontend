@@ -2,7 +2,7 @@ import { useState, useContext, useEffect } from 'react';
 import { NavigationContext } from '../../../App';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../../Components/Button';
-import { Plus, Eye, Edit, Trash2, Search, X } from 'lucide-react';
+import { Plus, Eye, Edit, Trash2, Search } from 'lucide-react';
 import apiService from '../../../services/api';
 
 interface User {
