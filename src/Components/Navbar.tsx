@@ -140,7 +140,7 @@ export default function Navbar({ isDashboard = false }: NavbarProps) {
   }
 
   // ============================
-  // LANDING NAVBAR (unchanged, except readability tweaks)
+  // LANDING NAVBAR
   // ============================
 
   return (
@@ -172,19 +172,13 @@ export default function Navbar({ isDashboard = false }: NavbarProps) {
           ))}
         </div>
 
-        {/* Auth buttons */}
+        {/* Logout button / Mobile menu */}
         <div className="flex items-center gap-3">
           <button
-            onClick={() => navigate('/login')}
-            className="px-4 py-2 text-purple-600 font-medium hover:text-purple-700 transition hidden sm:block"
+            onClick={() => setIsLogoutModalOpen(true)}
+            className="px-5 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition hidden sm:block"
           >
-            Login
-          </button>
-          <button
-            onClick={() => navigate('/register')}
-            className="px-5 py-2 bg-gradient-to-br from-purple-600 to-indigo-600 text-white rounded-lg font-medium hover:shadow-md hover:scale-105 transition"
-          >
-            Register
+            Logout
           </button>
 
           {/* Mobile menu */}
@@ -213,18 +207,19 @@ export default function Navbar({ isDashboard = false }: NavbarProps) {
             <div className="border-t border-gray-200 pt-2 mt-2">
               <button
                 onClick={() => {
-                  navigate('/login');
+                  setIsLogoutModalOpen(true);
                   setIsMenuOpen(false);
                 }}
-                className="w-full px-4 py-2 text-purple-600 font-medium hover:bg-purple-50 rounded-lg text-left"
+                className="w-full px-4 py-2 text-white font-medium bg-red-600 hover:bg-red-700 rounded-lg text-center"
               >
-                Login
+                Logout
               </button>
             </div>
           </div>
         </div>
       )}
 
+      {/* Logout Confirmation Modal */}
       {isLogoutModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-white rounded-lg shadow-lg max-w-sm w-full mx-4 animate-fade-in">
