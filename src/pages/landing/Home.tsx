@@ -111,7 +111,7 @@ export default function LandingHome() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-purple-800 flex items-center justify-center overflow-hidden pt-32 md:pt-0">
+      <section id="hero" className="relative min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-purple-800 flex items-center justify-center overflow-hidden pt-32 md:pt-0">
         {/* Background decorative elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-20 left-10 w-72 h-72 bg-white/5 rounded-full blur-3xl animate-float"></div>
@@ -182,7 +182,7 @@ export default function LandingHome() {
       </section>
 
       {/* Featured Hotels Section */}
-      <section className="py-20 bg-gray-50">
+      <section id="hotels" className="py-20 bg-gray-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 animate-fade-in">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 gradient-primary-text">Featured Hotels</h2>
@@ -248,7 +248,7 @@ export default function LandingHome() {
       </section>
 
       {/* Reviews Section */}
-      <section className="py-20 bg-white">
+      <section id="about" className="py-20 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 animate-fade-in">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 gradient-primary-text">What Our Guests Say</h2>
@@ -346,7 +346,7 @@ export default function LandingHome() {
       </section>
 
       {/* Contact Section */}
-      <section className="py-20 bg-gray-50">
+      <section id="contact" className="py-20 bg-gray-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 animate-fade-in">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 gradient-primary-text">Get in Touch</h2>

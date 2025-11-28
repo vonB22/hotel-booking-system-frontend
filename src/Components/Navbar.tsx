@@ -162,12 +162,23 @@ export default function Navbar({ isDashboard = false }: NavbarProps) {
 
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-8">
-          {['Home', 'Hotels', 'About', 'Contact'].map((item) => (
+          {[
+            { label: 'Home', id: 'hero' },
+            { label: 'Hotels', id: 'hotels' },
+            { label: 'About', id: 'about' },
+            { label: 'Contact', id: 'contact' }
+          ].map((item) => (
             <button
-              key={item}
+              key={item.id}
+              onClick={() => {
+                const element = document.getElementById(item.id);
+                if (element) {
+                  element.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
               className="text-gray-700 hover:text-purple-600 transition font-medium relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-gradient-to-r after:from-purple-500 after:to-indigo-500 hover:after:w-full after:transition-all"
             >
-              {item}
+              {item.label}
             </button>
           ))}
         </div>
@@ -195,12 +206,24 @@ export default function Navbar({ isDashboard = false }: NavbarProps) {
       {isMenuOpen && (
         <div className="md:hidden absolute top-16 left-0 right-0 bg-white border-b border-gray-200 shadow animate-slide-down">
           <div className="flex flex-col p-4 gap-2">
-            {['Home', 'Hotels', 'About', 'Contact'].map((item) => (
+            {[
+              { label: 'Home', id: 'hero' },
+              { label: 'Hotels', id: 'hotels' },
+              { label: 'About', id: 'about' },
+              { label: 'Contact', id: 'contact' }
+            ].map((item) => (
               <button
-                key={item}
+                key={item.id}
+                onClick={() => {
+                  const element = document.getElementById(item.id);
+                  if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                  }
+                  setIsMenuOpen(false);
+                }}
                 className="px-4 py-2 hover:bg-gray-100 rounded-lg text-gray-700 font-medium text-left"
               >
-                {item}
+                {item.label}
               </button>
             ))}
 
