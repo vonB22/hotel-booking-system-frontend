@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { NavigationContext } from '../contexts/NavigationContext';
-import { Menu, X, User, LogOut, ChevronDown } from 'lucide-react';
+import { Menu, X, User, LogOut, ChevronDown, Hotel } from 'lucide-react';
 import authService from '../services/auth';
 
 interface NavbarProps {
@@ -153,7 +153,7 @@ export default function Navbar({ isDashboard = false }: NavbarProps) {
           onClick={() => navigate('/landing')}
         >
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg transition-transform group-hover:scale-110">
-            IS
+            <Hotel className="w-5 h-5" />
           </div>
           <h1 className="text-xl font-bold text-gray-900 hidden md:block group-hover:scale-105 transition">
             StayEase
