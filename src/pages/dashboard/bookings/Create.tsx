@@ -57,6 +57,7 @@ export default function Create() {
         check_in: formData.check_in,
         check_out: formData.check_out,
         guests: parseInt(formData.guests) || 1,
+        price: formData.price ? parseFloat(formData.price) : undefined,
         notes: formData.notes,
       };
 

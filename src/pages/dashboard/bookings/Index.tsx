@@ -25,6 +25,7 @@ export default function Index() {
   const [error, setError] = useState('');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
@@ -59,6 +60,7 @@ export default function Index() {
 
   const confirmDelete = async () => {
     if (selectedId === null) return;
+    setIsDeleting(true);
 
     try {
       const response = await apiService.deleteBooking(selectedId);
@@ -66,11 +68,14 @@ export default function Index() {
         setBookings(bookings.filter(b => b.id !== selectedId));
         setIsDeleteModalOpen(false);
         setSelectedId(null);
+        setIsDeleting(false);
       } else {
         setError(response.message || 'Failed to delete booking');
+        setIsDeleting(false);
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred while deleting booking');
+      setIsDeleting(false);
     }
   };
 
@@ -89,7 +94,7 @@ export default function Index() {
       String(booking.id).includes(searchTerm) ||
       booking.notes.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesStatus = !statusFilter || booking.status === statusFilter;
+    const matchesStatus = !statusFilter || booking.status.toLowerCase() === statusFilter.toLowerCase();
     
     return matchesSearch && matchesStatus;
   });
@@ -282,14 +287,23 @@ export default function Index() {
                 <button
                   onClick={() => setIsDeleteModalOpen(false)}
                   className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200 font-medium"
+                  disabled={isDeleting}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={confirmDelete}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 hover:scale-105 active:scale-95 text-white rounded-lg transition-all duration-200 font-medium"
+                  disabled={isDeleting}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 hover:scale-105 active:scale-95 text-white rounded-lg transition-all duration-200 font-medium disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  Delete
+                  {isDeleting ? (
+                    <>
+                      <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                      <span>Deleting...</span>
+                    </>
+                  ) : (
+                    'Delete'
+                  )}
                 </button>
               </div>
             </div>

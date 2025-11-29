@@ -317,6 +317,10 @@ export default function Register() {
           transform: translateY(-50%) scale(1.1);
         }
 
+        .form-floating.password-field {
+          margin-bottom: 2rem;
+        }
+
         /* Loading spinner */
         .spinner {
           display: inline-block;
@@ -489,7 +493,7 @@ export default function Register() {
                 </div>
 
                 {/* Password Field */}
-                <div className="form-floating relative">
+                <div className="form-floating password-field relative">
                   <input
                     id="password"
                     type={showPassword ? 'text' : 'password'}

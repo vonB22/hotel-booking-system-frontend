@@ -21,6 +21,7 @@ export default function Index() {
   const [error, setError] = useState<string>('');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string>('');
 
   useEffect(() => {
@@ -71,19 +72,23 @@ export default function Index() {
 
   const confirmDelete = async () => {
     if (!selectedId) return;
+    setIsDeleting(true);
     try {
       setDeleteError('');
       const response = await apiService.deleteRole(selectedId);
       if (response.success) {
         setIsDeleteModalOpen(false);
         setSelectedId(null);
+        setIsDeleting(false);
         fetchRoles();
       } else {
         setDeleteError(response.message || 'Failed to delete role');
+        setIsDeleting(false);
       }
     } catch (err: any) {
       console.error('Failed to delete role:', err);
       setDeleteError(err.message || err.error || 'Failed to delete role');
+      setIsDeleting(false);
     }
   };
 
@@ -229,14 +234,23 @@ export default function Index() {
                     setDeleteError('');
                   }}
                   className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200 font-medium"
+                  disabled={isDeleting}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={confirmDelete}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 hover:scale-105 active:scale-95 text-white rounded-lg transition-all duration-200 font-medium"
+                  disabled={isDeleting}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 hover:scale-105 active:scale-95 text-white rounded-lg transition-all duration-200 font-medium disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  Delete
+                  {isDeleting ? (
+                    <>
+                      <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                      <span>Deleting...</span>
+                    </>
+                  ) : (
+                    'Delete'
+                  )}
                 </button>
               </div>
             </div>

@@ -3,13 +3,14 @@ import { NavigationContext } from '../../../App';
 import { useNavigate, useParams } from 'react-router-dom';
 import Button from '../../../Components/Button';
 import apiService from '../../../services/api';
-import { ArrowLeft, Mail, Phone, Shield } from 'lucide-react';
+import { ArrowLeft, Mail, Shield, Eye, EyeOff } from 'lucide-react';
 
 export default function Show() {
   const { currentItemId } = useContext(NavigationContext);
   const navigate = useNavigate();
   const params = useParams();
   const [user, setUser] = useState<any | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const id = params.id || currentItemId || null;
@@ -56,9 +57,32 @@ export default function Show() {
                 <Mail className="w-5 h-5 text-gray-400" />
                 <div><p className="text-sm text-gray-600">Email</p><p>{user.email}</p></div>
               </div>
-              <div className="flex items-center gap-3">
-                <Phone className="w-5 h-5 text-gray-400" />
-                <div><p className="text-sm text-gray-600">Phone</p><p>{user.phone}</p></div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg mb-4 border-b pb-2">Credentials</h3>
+            <div className="space-y-3">
+              <div className="relative">
+                <p className="text-sm text-gray-600 mb-2">Password</p>
+                <div className="flex items-center gap-2">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={user.password && user.password.trim() ? user.password : 'N/A'}
+                    readOnly
+                    title="User password"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-900 font-mono text-sm"
+                  />
+                  <button
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={showPassword ? 'Hide password' : 'Show password'}
+                    disabled={!user.password || !user.password.trim()}
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">The user's password in plain text. Use this to help users who forgot their password</p>
               </div>
             </div>
           </div>
@@ -66,8 +90,8 @@ export default function Show() {
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-lg mb-4 border-b pb-2">Activity Statistics</h3>
             <div className="grid grid-cols-2 gap-4">
-              <div><p className="text-sm text-gray-600">Total Bookings</p><p className="text-2xl">{user.bookingsCount}</p></div>
-              <div><p className="text-sm text-gray-600">Total Spent</p><p className="text-2xl">${user.totalSpent}</p></div>
+              <div><p className="text-sm text-gray-600">Total Bookings</p><p className="text-2xl">{user.bookingsCount || 0}</p></div>
+              <div><p className="text-sm text-gray-600">Total Spent</p><p className="text-2xl">${user.totalSpent || 0}</p></div>
             </div>
           </div>
         </div>

@@ -47,14 +47,16 @@ export default function Edit() {
     setIsLoading(true);
     setError('');
     try {
-      const response = await apiService.getBooking(id);
+      const response = await apiService.getBooking(String(id));
       if (response.success && response.data) {
         setFormData(response.data as unknown as Booking);
       } else {
         setError(response.message || 'Failed to fetch booking');
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred while fetching booking');
+    } catch (err: any) {
+      const errorMessage = err?.message || err?.error || 'An error occurred while fetching booking';
+      console.error('Fetch booking error:', err);
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -71,26 +73,31 @@ export default function Edit() {
       const submitData = {
         check_in: formData.check_in,
         check_out: formData.check_out,
-        guests: formData.guests,
+        guests: parseInt(String(formData.guests)) || 1,
         status: formData.status,
-        notes: formData.notes,
+        notes: formData.notes || '',
       };
 
       console.log('Submitting booking update:', submitData);
-      const response = await apiService.updateBooking(id, submitData as any);
+      const response = await apiService.updateBooking(String(id), submitData);
 
       console.log('Update response:', response);
       if (response.success) {
         navigate('/bookings');
       } else {
         setError(response.message || 'Failed to update booking');
+        if (response.errors) {
+          setErrors(response.errors);
+        }
       }
     } catch (err: any) {
       console.error('Update error:', err);
-      if (err.errors) {
+      if (err?.errors) {
         setErrors(err.errors);
+        setError('Please fix the errors below');
       } else {
-        setError(err.message || 'An error occurred while updating booking');
+        const errorMessage = err?.message || err?.error || 'An error occurred while updating booking';
+        setError(errorMessage);
       }
     } finally {
       setIsSubmitting(false);

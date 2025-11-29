@@ -21,8 +21,6 @@ const getRoleBadgeClasses = (role: string | undefined | null) => {
   switch (safeRole) {
     case 'admin':
       return 'bg-red-100 text-red-800';
-    case 'manager':
-      return 'bg-purple-100 text-purple-800';
     case 'user':
       return 'bg-green-100 text-green-800';
     default:
@@ -36,6 +34,7 @@ export default function Index() {
   const [users, setUsers] = useState<User[]>([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string>('');
+  const [isDeleting, setIsDeleting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('');
   const [error, setError] = useState<string>('');
@@ -99,12 +98,15 @@ export default function Index() {
   };
 
   const confirmDelete = async () => {
+    setIsDeleting(true);
     try {
       await apiService.deleteUser(selectedId);
       setIsDeleteModalOpen(false);
+      setIsDeleting(false);
       fetchUsers();
     } catch (error) {
       console.error('Failed to delete user:', error);
+      setIsDeleting(false);
     }
   };
 
@@ -167,7 +169,6 @@ export default function Index() {
               >
                 <option value="">All Roles</option>
                 <option value="Admin">Admin</option>
-                <option value="Manager">Manager</option>
                 <option value="User">User</option>
               </select>
             </div>
@@ -319,14 +320,23 @@ export default function Index() {
                     <button
                       onClick={() => setIsDeleteModalOpen(false)}
                       className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200 font-medium"
+                      disabled={isDeleting}
                     >
                       Cancel
                     </button>
                     <button
                       onClick={confirmDelete}
-                      className="px-4 py-2 bg-red-600 hover:bg-red-700 hover:scale-105 active:scale-95 text-white rounded-lg transition-all duration-200 font-medium"
+                      disabled={isDeleting}
+                      className="px-4 py-2 bg-red-600 hover:bg-red-700 hover:scale-105 active:scale-95 text-white rounded-lg transition-all duration-200 font-medium disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
                     >
-                      Delete
+                      {isDeleting ? (
+                        <>
+                          <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                          <span>Deleting...</span>
+                        </>
+                      ) : (
+                        'Delete'
+                      )}
                     </button>
                   </div>
                 </div>
