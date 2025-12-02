@@ -19,7 +19,6 @@ export default function Login() {
   const [success, setSuccess] = useState('');
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
   const [failedAttempts, setFailedAttempts] = useState(0);
-  const [isFieldValid, setIsFieldValid] = useState({ email: false, password: false });
 
   // Validation helpers
   const validateEmail = (emailValue: string): boolean => {
@@ -34,7 +33,6 @@ export default function Login() {
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setEmail(value);
-    setIsFieldValid(prev => ({ ...prev, email: validateEmail(value) }));
     if (validationErrors.email && validateEmail(value)) {
       setValidationErrors(prev => ({ ...prev, email: undefined }));
     }
@@ -43,7 +41,6 @@ export default function Login() {
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setPassword(value);
-    setIsFieldValid(prev => ({ ...prev, password: validatePassword(value) }));
     if (validationErrors.password && validatePassword(value)) {
       setValidationErrors(prev => ({ ...prev, password: undefined }));
     }
