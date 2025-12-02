@@ -191,43 +191,63 @@ export default function Register() {
         .form-floating input {
           border: 2px solid #e5e7eb;
           border-radius: 0.75rem;
-          padding: 1rem 1rem;
+          padding: 1.5rem 1rem 0.5rem 1rem;
           font-size: 0.95rem;
-          transition: all 0.3s ease;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           background: #f9fafb;
           height: 3.5rem;
+          width: 100%;
+        }
+
+        .form-floating input:autofill {
+          -webkit-autofill: none;
+          -webkit-box-shadow: 0 0 0 1000px #f9fafb inset !important;
+          -webkit-text-fill-color: #1f2937 !important;
         }
 
         .form-floating input:focus {
           border-color: #667eea;
-          box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-          background: #fff;
+          box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12);
+          background: #ffffff;
           outline: none;
+        }
+
+        .form-floating input:focus:autofill {
+          -webkit-box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12) inset, 0 0 0 1000px #ffffff inset !important;
+        }
+
+        .form-floating input:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+          background: #f3f4f6;
         }
 
         .form-floating label {
           position: absolute;
-          top: 50%;
+          top: 1.25rem;
           left: 1rem;
-          transform: translateY(-50%);
           color: #6b7280;
           font-size: 0.95rem;
           pointer-events: none;
-          transition: all 0.2s ease;
-          background: transparent;
-          padding: 0 0.25rem;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          padding: 0;
+          line-height: 1;
+          transform-origin: left top;
         }
 
-        .form-floating input:focus ~ label,
-        .form-floating input:not(:placeholder-shown) ~ label {
-          top: 0;
-          font-size: 0.75rem;
+        .form-floating input:focus ~ label {
           color: #667eea;
-          background: white;
-          padding: 0 0.5rem;
+          top: 0.375rem;
+          font-size: 0.75rem;
         }
 
         .form-floating input:not(:focus):not(:placeholder-shown) ~ label {
+          color: #6b7280;
+          top: 0.375rem;
+          font-size: 0.75rem;
+        }
+
+        .form-floating input:not(:focus) ~ label {
           color: #6b7280;
         }
 
@@ -270,8 +290,25 @@ export default function Register() {
           border-color: #667eea;
         }
 
+        .checkbox-custom:checked::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%) rotate(45deg) scale(1);
+          width: 0.25rem;
+          height: 0.5rem;
+          border: solid white;
+          border-width: 0 2px 2px 0;
+        }
+
         .checkbox-custom:focus {
-          box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.25);
+          outline: none;
+        }
+
+        .checkbox-custom:hover:not(:disabled) {
+          border-color: #667eea;
         }
 
         .text-link {
@@ -308,17 +345,39 @@ export default function Register() {
           transform: translateY(-50%);
           color: #9ca3af;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
           z-index: 10;
+          padding: 0.5rem;
+          border-radius: 0.375rem;
+          width: 2.5rem;
+          height: 2.5rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          touch-action: manipulation;
         }
 
-        .password-toggle:hover {
+        .password-toggle:hover:not(:disabled) {
           color: #667eea;
-          transform: translateY(-50%) scale(1.1);
+          background: rgba(102, 126, 234, 0.08);
+          transform: translateY(-50%) scale(1.08);
+        }
+
+        .password-toggle:active:not(:disabled) {
+          transform: translateY(-50%) scale(1);
+        }
+
+        .password-toggle:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
         }
 
         .form-floating.password-field {
-          margin-bottom: 2rem;
+          margin-bottom: 0;
+        }
+
+        .form-floating.password-field input {
+          padding-right: 3rem;
         }
 
         /* Loading spinner */
@@ -342,6 +401,34 @@ export default function Register() {
             animation-duration: 0.01ms !important;
             animation-iteration-count: 1 !important;
             transition-duration: 0.01ms !important;
+          }
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+          .form-floating input {
+            font-size: 16px;
+            height: 3.25rem;
+            padding: 1.25rem 0.875rem 0.5rem 0.875rem;
+          }
+
+          .form-floating label {
+            left: 0.875rem;
+          }
+
+          .password-toggle {
+            right: 0.5rem;
+            width: 2.25rem;
+            height: 2.25rem;
+          }
+
+          .password-toggle svg {
+            width: 1.25rem;
+            height: 1.25rem;
+          }
+
+          .form-floating.password-field input {
+            padding-right: 3rem;
           }
         }
       `}</style>
@@ -408,15 +495,15 @@ export default function Register() {
 
               {/* Success Message */}
               {success && (
-                <div className="mb-4 p-3 bg-[#d1fae5] rounded-xl border-0 animate-slide-down flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-[#065f46] flex-shrink-0" />
+                <div className="mb-4 p-3 bg-gradient-to-r from-[#d1fae5] to-[#a7f3d0] rounded-xl border border-[#6ee7b7] animate-slide-down flex items-center gap-2" role="alert" aria-live="polite">
+                  <CheckCircle className="w-5 h-5 text-[#065f46] flex-shrink-0" aria-hidden="true" />
                   <span className="text-[#065f46] text-sm">{success}</span>
                 </div>
               )}
 
               {/* Error Message */}
               {error && (
-                <div className="mb-4 p-4 bg-red-50 rounded-xl border-2 border-red-200 animate-slide-down">
+                <div className="mb-4 p-4 bg-gradient-to-r from-[#fee2e2] to-[#fecaca] rounded-xl border-2 border-[#fca5a5] animate-slide-down" role="alert" aria-live="assertive">
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0 pt-0.5">
                       <AlertCircle className="w-6 h-6 text-red-600" />
@@ -522,39 +609,39 @@ export default function Register() {
                       <Eye className="w-5 h-5" />
                     )}
                   </button>
-
-                  {/* Password Strength Indicator */}
-                  {password && (
-                    <div className="mt-3 ml-1 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                          <div 
-                            className={`h-full transition-all duration-300 ${
-                              strengthColor === 'red' ? 'w-1/3 bg-red-500' :
-                              strengthColor === 'yellow' ? 'w-2/3 bg-yellow-500' :
-                              'w-full bg-green-500'
-                            }`}
-                          ></div>
-                        </div>
-                        <span className={`text-xs font-semibold whitespace-nowrap ${
-                          strengthColor === 'red' ? 'text-red-600' :
-                          strengthColor === 'yellow' ? 'text-yellow-600' :
-                          'text-green-600'
-                        }`}>
-                          {strengthLabel}
-                        </span>
-                      </div>
-
-                      {/* Requirements */}
-                      <div className="grid grid-cols-2 gap-2 p-2 bg-gray-50 rounded text-xs">
-                        <PasswordRequirement met={passwordStrength.hasUppercase} label="Uppercase" />
-                        <PasswordRequirement met={passwordStrength.hasLowercase} label="Lowercase" />
-                        <PasswordRequirement met={passwordStrength.hasNumber} label="Number" />
-                        <PasswordRequirement met={passwordStrength.hasSpecial} label="Special char" />
-                      </div>
-                    </div>
-                  )}
                 </div>
+
+                {/* Password Strength Indicator */}
+                {password && (
+                  <div className="ml-1 space-y-2 mb-4 mt-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full transition-all duration-300 ${
+                            strengthColor === 'red' ? 'w-1/3 bg-red-500' :
+                            strengthColor === 'yellow' ? 'w-2/3 bg-yellow-500' :
+                            'w-full bg-green-500'
+                          }`}
+                        ></div>
+                      </div>
+                      <span className={`text-xs font-semibold whitespace-nowrap ${
+                        strengthColor === 'red' ? 'text-red-600' :
+                        strengthColor === 'yellow' ? 'text-yellow-600' :
+                        'text-green-600'
+                      }`}>
+                        {strengthLabel}
+                      </span>
+                    </div>
+
+                    {/* Requirements */}
+                    <div className="grid grid-cols-2 gap-2 p-2 bg-gray-50 rounded text-xs">
+                      <PasswordRequirement met={passwordStrength.hasUppercase} label="Uppercase" />
+                      <PasswordRequirement met={passwordStrength.hasLowercase} label="Lowercase" />
+                      <PasswordRequirement met={passwordStrength.hasNumber} label="Number" />
+                      <PasswordRequirement met={passwordStrength.hasSpecial} label="Special char" />
+                    </div>
+                  </div>
+                )}
 
                 {/* Confirm Password Field */}
                 <div className="form-floating relative">
@@ -627,17 +714,17 @@ export default function Register() {
                 <button
                   type="submit"
                   disabled={isLoading || !isFormValid}
-                  className="btn-gradient w-full py-3 px-8 text-white rounded-xl flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mb-4"
+                  className="btn-gradient w-full py-3 px-8 text-white rounded-xl flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mb-4 min-h-12"
                 >
                   {isLoading ? (
                     <>
-                      <span className="spinner"></span>
+                      <span className="spinner" aria-hidden="true"></span>
                       <span>Creating account...</span>
                     </>
                   ) : (
                     <>
                       <span>Create Account</span>
-                      <Check className="w-5 h-5" />
+                      <Check className="w-5 h-5" aria-hidden="true" />
                     </>
                   )}
                 </button>

@@ -1,6 +1,3 @@
-/* Skeleton Styles for Better UX and Animations */
-
-/* Smooth transitions for all interactive elements */
 * {
   transition: all 0.2s ease-in-out;
 }
