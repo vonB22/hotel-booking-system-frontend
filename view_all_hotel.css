@@ -1,0 +1,376 @@
+/* ================= GLOBAL RESETS ================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+html {
+    font-size: 65.5%;
+    scroll-behavior: smooth;
+}
+
+body {
+    background-color: #0b0c10;
+    color: #fff;
+}
+
+/* ================= NAVBAR ================= */
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: white;
+    padding: 1.5rem 0;
+}
+
+.navbar_container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 90%;
+    max-width: 1400px;
+    margin: auto;
+}
+
+.nav_logo {
+    color: black;
+    font-size: 2.7rem;
+    text-decoration: none;
+}
+
+/* Center nav */
+.mid_nav ul {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+    align-items: center;
+}
+
+.navbar_link a {
+    color: black;
+    text-decoration: none;
+    font-size: 1.8rem;
+}
+
+.mid_nav_btn button {
+    padding: 0.5rem 1rem;
+    font-size: 1.6rem;
+    background: white;
+    border: 2px solid black;
+    color: black;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.right_nav_btn {
+    background: black;
+    color: white;
+    padding: 1rem 1.8rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Mobile Menu Button */
+.navbar_toggle {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+}
+.navbar_toggle .bar {
+    width: 30px;
+    height: 10px;
+    background: white;
+    margin: 3px 2px;
+}
+.navbar_link a:hover{
+    color: #a4863d;
+}
+.mid_nav_btn button:hover{
+    color: white;
+    background: black;
+}
+/* ================= MOBILE NAVBAR ================= */
+@media (max-width: 910px) {
+    .mid_nav ul {
+        position: absolute;
+        top: -600px;
+        left: 0;
+        width: 100%;
+        flex-direction: column;
+        background: #0b0c10;
+        padding: 1rem 0;
+        gap: 1rem;
+        transition: 0.4s;
+        text-align: center;
+    }
+    .navbar_toggle{
+        background-color: black;
+    }
+    .navbar_item.active{
+        background-color: rgba(57, 57, 57, 0.7);
+        position: absolute;
+        top: 0;
+    }
+
+    .mid_nav ul.active {
+        top: 55px;
+    }
+
+    .right_nav_btn {
+        display: none;
+    }
+
+    .navbar_toggle {
+        display: flex;
+    }
+    
+    
+}
+
+/* ================= SEARCH CARD ================= */
+
+/* Mobile toggle button */
+.navbar_toggle {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    position: absolute;
+    right: 4.6rem;
+    top: 1.5rem;
+}
+
+
+.navbar_container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 90%;
+    max-width: 1400px;
+    margin: auto;
+}
+
+/* HERO MOBILE */
+@media (max-width: 910px) {
+    .main_txt h1,
+    .main_txt p,
+    .main_content {
+        text-align: center;
+    }
+    .navbar_toggle {
+        display: flex;
+        vertical-align: top;
+        height: 30px;
+    }
+
+    /* hide desktop menu */
+    .mid_nav ul {
+        position: absolute;
+        top: -500px;
+        left: 0;
+        width: 100%;
+        flex-direction: column;
+        background: #0b0c10;
+        padding: 2rem 0;
+        text-align: center;
+        transition: .4s;
+    }
+
+    .mid_nav ul.active {
+        top: 75px;
+    }
+    .right_nav{
+        position: relative;
+    }
+    .right_nav .img1{
+        cursor: pointer;
+        position: absolute;
+        right: 5rem;
+        top: 8px;
+    }
+    
+
+    /* hide the right button on mobile */
+    .right_nav_btn {
+        display: none;
+    }
+}
+
+
+
+/* ================= FEATURED HOTELS ================= */
+.feature_hotel {
+    padding: 5rem 6rem;
+    background-color: white;
+}
+
+.feature_hotel h2 {
+    color: black;
+    font-size: 3.5rem;
+    text-align: center;
+}
+
+.feature_hotel .desc {
+    text-align: center;
+    font-size: 1.6rem;
+    margin-top: 1rem;
+    margin-bottom: 5rem;
+    color: #a1a1a1;
+}
+
+.featured-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    column-gap: 2rem;
+    row-gap: 4rem;
+    max-width: 1300px;
+    margin: auto;
+}
+
+.featured-card {
+    background: #111;
+    border: 1px solid #444;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.featured-card:hover{
+    transform: scale(1.045);
+    transition: 0.2s;
+}
+
+.featured-card .hotel-image1,
+.hotel-image2,
+.hotel-image3 {
+    height: 250px;
+    background-size: cover;
+    background-position: center;
+    width: 100%;
+}
+
+.hotel-image1 {
+    background-image: url(image/067f66f42919cd9a17997a7e5d2e28a9fa9e4ea8.jpg);
+}
+.hotel-image2 {
+    background-image: url(image/523fe8b165eb1893d78a40bc10636eb843da7754.jpg);
+}
+.hotel-image3 {
+    background-image: url(image/d51fb9fdbb2e67cb1f5b806c914801461a2c2d84.jpg);
+}
+
+.hotel-review {
+    padding: 1.5rem;
+    background-color: white;
+    position: relative;
+}
+.hotel-name{
+    font-size: 1.5rem;
+    color: black;
+    margin-bottom: 0.5rem;
+}
+.hotel-location{
+    font-size: 1.3rem;
+    color: gray;
+    margin-bottom: 1rem;
+}
+.hotel-price{
+    font-size: 1.8rem;
+    color: black;
+    margin-top: 1rem;
+}
+
+.feature-btn {
+    padding: 1rem 1.5rem;
+    border-radius: 5px;
+    border: none;
+    margin-top: 1rem;
+    cursor: pointer;
+    color: white;
+    background-color: black;
+    position: absolute;
+    right: 2rem;
+    top: 6.5rem;
+}
+
+/* CENTER VIEW ALL BUTTON */
+.view_all_hotels {
+    display: block;
+    margin: 3rem auto 0;
+    padding: 1rem 2rem;
+    background: white;
+    color: black;
+    border: 1px solid gray;
+    border-radius: 10px;
+    cursor: pointer;
+}
+.viewed_hotel_link{
+    background: white;
+    color: black;
+    border: 1px solid gray;
+    border-radius: 10px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+@media (max-width: 768px){
+    .featured-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin: auto;
+}
+}
+@media (max-width: 576px){
+    .featured-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    margin: auto;
+}
+}
+
+/*inserting Icon*/
+.left_nav{
+    display: flex;
+}
+.left_nav img{
+    justify-content: center;
+    align-items: center;
+    margin-right: 0.5rem;
+}
+.right_nav{
+    display: flex;
+    position: relative;
+}
+.right_nav .img1{
+    height: 20px;
+    position: absolute;
+    align-items: center;
+    top: 7px;
+    right: 135px;
+    cursor: pointer;
+}
+.right_nav .img2{
+    height: 20px;
+    position: absolute;
+    top: 7px;
+    right: 95px;
+    cursor: pointer;
+}
+@media (max-width: 910px){
+    .right_nav .img1{
+    height: 20px;
+    position: absolute;
+    align-items: center;
+    top: -10px;
+    right: 110px;
+    cursor: pointer;
+}
+    .right_nav .img2{
+    height: 20px;
+    position: absolute;
+    top: -10px;
+    right: 70px;
+    cursor: pointer;
+}
+}

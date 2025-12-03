@@ -3,11 +3,384 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="stylesheet" href="style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>frontend</title>
   </head>
   <body>
     <div id="root"></div>
+    <span id="Home"></span>
+        <div class="navbar">
+            <div class="navbar_container">
+                <div class="left_nav">
+                    <img src="icons/logo-icon.png" alt="Logo-icon">
+                    <a href="/" class="nav_logo">StayEase</a>
+                </div>
+                <div class="navbar_toggle" id="mobile-menu">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+                <div class="mid_nav" >
+                    <ul class="navbar_item">
+                        <li class="navbar_link">
+                            <a href="#Home">Home</a>
+                        </li>
+                        <li class="navbar_link">
+                            <a href="#scrollHotel">Hotels</a>
+                        </li>
+                        <li class="navbar_link">
+                            <a href="#scrollContact">Contact</a>
+                        </li>
+                        <li class="navbar_link">
+                            <a href="#scrollAbout">About</a>
+                        </li>
+                        <li class="mid_nav_btn">
+                            <button>Dashboard</button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="right_nav">
+                    <img class="img1" src="icons/Search-Icon.png" alt="Search-icon">
+                    <img class="img2" src="icons/Darkmode-Icon.png" alt="darkmode-icon">
+                    <button class="right_nav_btn">Login</button>
+                </div>
+            </div>
+        </div>
+        <div class="main">
+            <div class="main_container">
+                <div class="main_content">
+                    <div class="review">
+                        <img class="profileImg1" src="icons/profile3.png" alt="">
+                        <img class="profileImg2" src="icons/profile2.png" alt="">
+                        <img class="profileImg3" src="icons/profile1.png" alt="">
+                        <p>Trusted by 1M+ travelers</p>
+                    </div>
+                    <div class="main_txt">
+                        <h1>Stay. Relax. Book with ease.</h1>
+                        <p>Discover handpicked hotels, best rate, and instant, booking for your perfect stay</p>
+                    </div>
+                    <div class="main_btn">
+                        <button class="main_btn1">
+                            <a href="#scrollHotel">Browse Hotel</a>
+                        </button>
+                        <button class="main_btn2">
+                            <img src="icons/view-Icon.png" alt="">
+                            View Special Offers
+                        </button>
+                    </div>
+                </div>
+                <div class="main_card">
+                    <div class="main_sep">
+                        <div class="main_card_content">
+                            <p>Destination</p>
+                            <select name="Country" id="select_Country" aria-placeholder="Select Country">
+                                <option value="Philippines">Philippines</option>
+                                <option value="Singapore">Singapore</option>
+                                <option value="Japan">Japan</option>
+                            </select>
+                        </div>
+                        <div class="main_card_content">
+                            <p>Check-in</p>
+                            <input type="date" placeholder="Select your Check-in Date">
+                        </div>
+                        <div class="main_card_content">
+                            <p>Check-out</p>
+                            <input type="date" placeholder="Select your Check-out Date">
+                        </div>
+                        <div class="main_card_content">
+                            <p>Guest</p>
+                            <input type="number">
+                        </div>
+                    </div>
+                    <div class="main_card_btn">
+                            <button>Search Hotels</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="feature_hotel" id="scrollHotel">
+            <h2>Featured Hotels</h2>
+            <p class="desc">Handpicked luxury accommodations for your next unforgettable stay</p>
+            <div class="featured-grid">
+                <div class="featured-card">
+                    <div class="hotel-image1"></div>
+                    <div class="hotel-review">
+                        <h4 class="hotel-name">Desert Oasis Resort</h4>
+                        <p class="hotel-location">Dubai, UAE</p>
+                        <img src="icons/yellow-star-icon.png" alt="">
+                        <img src="icons/yellow-star-icon.png" alt="">
+                        <img src="icons/yellow-star-icon.png" alt="">
+                        <img src="icons/yellow-star-icon.png" alt="">
+                        <img src="icons/white_star-Icon.png" alt="">
+                        <p class="hotel-price">$453</p>
+                        <button class="feature-btn">Book Now</button>
+                    </div>
+                </div>
+                <div class="featured-card">
+                    <div class="hotel-image2"></div>
+                    <div class="hotel-review">
+                        <h4 class="hotel-name">Sunset Beach Hotel</h4>
+                        <p class="hotel-location">Maldives</p>
+                        <img src="icons/yellow-star-icon.png" alt="">
+                        <img src="icons/yellow-star-icon.png" alt="">
+                        <img src="icons/yellow-star-icon.png" alt="">
+                        <img src="icons/white_star-Icon.png" alt="">
+                        <img src="icons/white_star-Icon.png" alt="">
+                        <p class="hotel-price">$45</p>
+                        <button class="feature-btn">Book Now</button>
+                    </div>
+                </div>
+                <div class="featured-card">
+                    <div class="hotel-image3"></div>
+                    <div class="hotel-review">
+                        <h4 class="hotel-name">Mountain View Lodge</h4>
+                        <p class="hotel-location">Swiss Alps</p>
+                        <img src="icons/yellow-star-icon.png" alt="">
+                        <img src="icons/yellow-star-icon.png" alt="">
+                        <img src="icons/yellow-star-icon.png" alt="">
+                        <img src="icons/yellow-star-icon.png" alt="">
+                        <img src="icons/yellow-star-icon.png" alt="">
+                        <p class="hotel-price">$53</p>
+                        <button class="feature-btn">Book Now</button>
+                    </div>
+                </div>
+                <div class="featured-card">
+                    <div class="hotel-image1"></div>
+                    <div class="hotel-review">
+                        <h4 class="hotel-name">Urban Luxury Suites</h4>
+                        <p class="hotel-location">New York, USA</p>
+                        <img src="icons/yellow-star-icon.png" alt="">
+                        <img src="icons/yellow-star-icon.png" alt="">
+                        <img src="icons/yellow-star-icon.png" alt="">
+                        <img src="icons/white_star-Icon.png" alt="">
+                        <img src="icons/white_star-Icon.png" alt="">
+                        <p class="hotel-price">$43</p>
+                        <button class="feature-btn">Book Now</button>
+                    </div>
+                </div>
+                <div class="featured-card">
+                    <div class="hotel-image2"></div>
+                    <div class="hotel-review">
+                        <h4 class="hotel-name">Tropical Paradise Resort</h4>
+                        <p class="hotel-location">Bali, Indonesia</p>
+                        <img src="icons/yellow-star-icon.png" alt="">
+                        <img src="icons/yellow-star-icon.png" alt="">
+                        <img src="icons/yellow-star-icon.png" alt="">
+                        <img src="icons/yellow-star-icon.png" alt="">
+                        <img src="icons/white_star-Icon.png" alt="">
+                        <p class="hotel-price">$487</p>
+                        <button class="feature-btn">Book Now</button>
+                    </div>
+                </div>
+                <div class="featured-card">
+                    <div class="hotel-image3"></div>
+                    <div class="hotel-review">
+                        <h4 class="hotel-name">Historic Grand Hotel</h4>
+                        <p class="hotel-location">Paris, France</p>
+                        <img src="icons/yellow-star-icon.png" alt="">
+                        <img src="icons/yellow-star-icon.png" alt="">
+                        <img src="icons/white_star-Icon.png" alt="">
+                        <img src="icons/white_star-Icon.png" alt="">
+                        <img src="icons/white_star-Icon.png" alt="">
+                        <p class="hotel-price">$456</p>
+                        <button class="feature-btn">Book Now</button>
+                    </div>
+                </div>
+            </div>
+            <a class="view_hotels_link" href="view_all_hotel.html">
+                <button class="view_all_hotels">View All Hotels</button>
+            </a>
+        </div>
+        <!--Latest Review-->
+        <div class="latest-reviews">
+            <h4 class="latest-review">Latest Review</h4>
+            <div class="review-container">
+                <div class="review-card">
+                    <img src="icons/yellow-star-icon.png" alt="">
+                    <img src="icons/yellow-star-icon.png" alt="">
+                    <img src="icons/yellow-star-icon.png" alt="">
+                    <img src="icons/yellow-star-icon.png" alt="">
+                    <img src="icons/white_star-Icon.png" alt="">
+                    <h5 class="reviewSays">Amazing Stay</h5>
+                    <p class="descSays">Comfortable bed and tasty breakfast!</p>
+                    <hr>
+                    <div class="img-profile">
+                        <img class="img-review" src="image/490049c6b09175cb16ddc175c34afd367be3ce8b.jpg" alt="">
+                        <div class="desccrip">
+                            <p class="profile-name">James Wilson <br>March 31, 2005</p> 
+                            
+                        </div>
+                    </div>
+                </div>
+                <div class="review-card">
+                    <img src="icons/yellow-star-icon.png" alt="">
+                    <img src="icons/yellow-star-icon.png" alt="">
+                    <img src="icons/yellow-star-icon.png" alt="">
+                    <img src="icons/yellow-star-icon.png" alt="">
+                    <img src="icons/white_star-Icon.png" alt="">
+                    <h5 class="reviewSays">Great Value</h5>
+                    <p class="descSays">Comfortable bed and tasty breakfast!</p>
+                    <hr>
+                    <div class="img-profile">
+                        <img class="img-review" src="image/116bbe5fbf21918a2e9ec5f05b9ac3e32b75de28.jpg" alt="">
+                        <div class="desccrip">
+                            <p class="profile-name">Zara <br>March 31, 2005</p> 
+                            
+                        </div>
+                    </div>
+                </div>
+                <div class="review-card">
+                    <img src="icons/yellow-star-icon.png" alt="">
+                    <img src="icons/yellow-star-icon.png" alt="">
+                    <img src="icons/yellow-star-icon.png" alt="">
+                    <img src="icons/yellow-star-icon.png" alt="">
+                    <img src="icons/white_star-Icon.png" alt="">
+                    <h5 class="reviewSays">Exceptional Service</h5>
+                    <p class="descSays">Comfortable bed and tasty breakfast!</p>
+                    <hr>
+                    <div class="img-profile">
+                        <img class="img-review" src="image/49e169c757a8a953020a3b3dc925dcc3f489813b.jpg" alt="">
+                        <div class="desccrip">
+                            <p class="profile-name">Wilson <br>March 31, 2005</p>  
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <div class="stayUpdated-container">
+            <h2 class="Stays">Stay Updated with InstaStay</h2>
+            <p class="StaysParag" >Subscribe to receive exclusive hotel deals, travel, guide, and special offer straight to your box</p>
+            <input class="StaysEmail" id="scrollAbout" type="email" placeholder="Enter your Email">
+            <button class="StaysBtn">Subscribe</button>
+        </div>
+            <div class="AboutUs-container" id="scrollAbout">
+                <h2>ABOUT US</h2>
+                <p>Why traveler worldwide trust StayEase for their perfect accommodations</p>
+                <div class="AboutCharac">
+                    <div class="characContainer">
+                        <img src="icons/About-safe.png" alt="">
+                        <h3>Safe</h3>
+                        <p>Secure Booking and payment processing with industry-leading encryption</p>
+                    </div>
+                    <div class="characContainer">
+                        <img src="icons/About-Quality.png" alt="">
+                        <h3>Quality</h3>
+                        <p>Handpicked hotels verified for excellence and customer satisfaction</p>
+                    </div>
+                    <div class="characContainer">
+                        <img src="icons/About-safe.png" alt="">
+                        <h3>Fast</h3>
+                        <p>Instant confirmation and quick booking process in just minutes</p>
+                    </div>
+                    <div class="characContainer">
+                        <img src="icons/About-247.png" alt="">
+                        <h3>24/7</h3>
+                        <p>Roumd-the-Clock customersupport whenever you need assistance</p>
+                    </div>
+                </div>
+            </div>
+            <span id="scrollContact"></span>
+            <div class="GetInTouch-container">
+                <h2 >Get In Touch</h2>
+                <p>HAve Question? we love to hear from you. Send us message and  we'll respond as soon as possible.</p>
+                <div class="Get-container">
+                    <div class="get_card-container">
+                        <img src="icons/Contact-Phone.png" alt="">
+                        <h4>Phone</h4>
+                        <h5>+1 (555) 123-456</h5>
+                        <p>Mon-Fri 9am-6pm EST</p>
+                    </div>
+                    <div class="get_card-container">
+                        <img src="icons/Contact-Email.png" alt="">
+                        <h4>Email</h4>
+                        <h5>Support@StayEase.com</h5>
+                        <p>24/7 support available</p>
+                    </div>
+                    <div class="get_card-container">
+                        <img src="icons/Contact-Offfice.png" alt="">
+                        <h4>Office</h4>
+                        <h5>123 travel street</h5>
+                        <p>New York,NY 10001</p>
+                    </div>
+                </div>
+            </div>
+            <div class="profile-container">
+
+                <div class="profile-row">
+                    <div class="profile_info profile_infos">
+                        <p>Full Name</p>
+                        <input type="text" placeholder="John Doe">
+                    </div>
+
+                    <div class="profile_info">
+                        <p>Email Address</p>
+                        <input type="email" placeholder="john@example.com">
+                    </div>
+                </div>
+
+                <div class="profile_info1">
+                    <p>Subject</p>
+                    <input type="text" placeholder="How can we help you?">
+                </div>
+
+                <div class="profile_info1">
+                    <p>Message</p>
+                    <input type="text" placeholder="Tell us more about your inquiry...">
+                </div>
+                 <div class="profile_info1">
+                  <button>
+                    <img src="icons/Send_message-Icon.png" alt="">
+                    Send Message
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+        <footer>
+            <div class="footer-container">
+                <div class="footer_div">
+                    <h3>StayEase</h3>
+                    <p>Your trusted partner for finding the perfect accomodation worldwide</p>
+                    <a href="">
+                        <img class="social_icons" src="icons/facebook-Link.png" alt="">
+                    </a>
+                    <a href="">
+                        <img class="social_icons" src="icons/twitter-Link.png" alt="">
+                    </a>
+                    <a href="">
+                        <img class="social_icons" src="icons/instagram-Link.png" alt="">
+                    </a>
+                    <a href="">
+                        <img class="social_icons" src="icons/LInkIn-Link.png" alt="">
+                    </a>
+                </div>
+                <div class="footer_div">
+                    <h3>Company</h3>
+                    <a href="/">About Us</a><br>
+                    <a href="/">Career</a><br>
+                    <a href="/">Press</a><br>
+                    <a href="/">Blog</a>
+                </div>
+                <div class="footer_div">
+                    <h3>Support</h3>
+                    <a href="/">Help Center</a><br>
+                    <a href="/">Safety Information</a> <br>
+                    <a href="/">Cancellation Options</a><br>
+                    <a href="/">Contact Us</a>
+                </div>
+                <div class="footer_div">
+                    <h3>Resources</h3>
+                    <a href="/">List your Property</a><br>
+                    <a href="/">Partnerships</a><br>
+                    <a href="/">Term of Services</a><br>
+                    <a href="/">Privacy Policy</a>
+                </div>
+            </div>
+            <hr class="hr">
+            <p class="end">© 2025 StayEase. All rights reserved</p>
+        </footer>
+        <script src="index.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
