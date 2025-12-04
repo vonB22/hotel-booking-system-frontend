@@ -49,7 +49,12 @@ export default function Edit() {
     try {
       const response = await apiService.getBooking(String(id));
       if (response.success && response.data) {
-        setFormData(response.data as unknown as Booking);
+        const bookingData = response.data as unknown as Booking;
+        // Normalize status to match UI options (capitalize first letter)
+        if (bookingData.status) {
+          bookingData.status = bookingData.status.charAt(0).toUpperCase() + bookingData.status.slice(1);
+        }
+        setFormData(bookingData);
       } else {
         setError(response.message || 'Failed to fetch booking');
       }
@@ -74,7 +79,7 @@ export default function Edit() {
         check_in: formData.check_in,
         check_out: formData.check_out,
         guests: parseInt(String(formData.guests)) || 1,
-        status: formData.status,
+        status: formData.status.toLowerCase(),
         notes: formData.notes || '',
       };
 
@@ -95,6 +100,8 @@ export default function Edit() {
       if (err?.errors) {
         setErrors(err.errors);
         setError('Please fix the errors below');
+      } else if (err?.status === 0 || err?.message?.includes('Network')) {
+        setError('Network error: Unable to connect to the server. Please check your internet connection.');
       } else {
         const errorMessage = err?.message || err?.error || 'An error occurred while updating booking';
         setError(errorMessage);

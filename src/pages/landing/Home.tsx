@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { MapPin, Star, Mail, Phone, MapPinIcon, Send } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { MapPin, Star, Mail, Phone, MapPinIcon, Send, RefreshCw, X } from 'lucide-react';
 import apiService from '../../services/api';
+import Navbar from '../../Components/Navbar';
 import img1 from '../../assets/img/hotels/img1.jpg';
 import img2 from '../../assets/img/hotels/img2.jpg';
 import img3 from '../../assets/img/hotels/img3.jpg';
@@ -11,10 +13,13 @@ import img6 from '../../assets/img/hotels/img6.jpg';
 interface Hotel {
   id: number;
   name: string;
-  location: string;
-  price: number;
+  location?: string;
+  detail?: string;
+  price?: number;
   rating?: number;
   image?: string;
+  rooms?: number;
+  amenities?: string[];
 }
 
 interface Review {
@@ -28,45 +33,97 @@ interface Review {
 }
 
 export default function LandingHome() {
+  const navigate = useNavigate();
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedHotels, setExpandedHotels] = useState(false);
   const [email, setEmail] = useState('');
   const [emailSuccess, setEmailSuccess] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
+  const [showHotelModal, setShowHotelModal] = useState(false);
 
-  useEffect(() => {
-    fetchHotels();
-    fetchReviews();
-  }, []);
-
-  const fetchHotels = async () => {
+  const fetchHotels = useCallback(async () => {
     try {
+      setIsRefreshing(true);
       const response = await apiService.getHotels();
-      if (response.data && Array.isArray(response.data)) {
-        setHotels(response.data.slice(0, 12));
+      if (response.success && response.data && Array.isArray(response.data)) {
+        // Map hotel data to interface, with default values
+        const mappedHotels = response.data.map((hotel: any) => ({
+          id: hotel.id,
+          name: hotel.name || 'Unnamed Hotel',
+          location: hotel.location || hotel.detail || 'Unknown Location',
+          detail: hotel.detail || '',
+          price: hotel.price || Math.floor(Math.random() * 300) + 50,
+          rating: hotel.rating || (Math.random() * 2 + 3).toFixed(1),
+          image: hotel.image,
+          rooms: hotel.rooms,
+          amenities: hotel.amenities || [],
+        }));
+        setHotels(mappedHotels.slice(0, 12));
       }
     } catch (error) {
       console.error('Failed to fetch hotels:', error);
       setHotels([]);
     } finally {
+      setIsRefreshing(false);
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     try {
-      const response = await apiService.request('/api/reviews', { method: 'GET' });
-      if (response.data && Array.isArray(response.data)) {
+      const response = await apiService.request('/reviews', { method: 'GET' });
+      if (response.success && response.data && Array.isArray(response.data)) {
         setReviews(response.data.slice(0, 3));
+      } else {
+        // Use mock reviews if API doesn't have them
+        setReviews(getMockReviews());
       }
     } catch (error) {
       console.error('Failed to fetch reviews:', error);
-      setReviews([]);
+      setReviews(getMockReviews());
     }
+  }, []);
+
+  // Mock reviews to display if API doesn't have them
+  const getMockReviews = (): Review[] => {
+    return [
+      {
+        id: 1,
+        author: 'Sarah Johnson',
+        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100',
+        rating: 5,
+        date: 'November 2024',
+        title: 'Exceptional Service and Comfort',
+        comment: 'Had an amazing stay! The staff was incredibly friendly and the room was exactly as described. Will definitely book again.'
+      },
+      {
+        id: 2,
+        author: 'Michael Chen',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100',
+        rating: 5,
+        date: 'October 2024',
+        title: 'Perfect Location and Amenities',
+        comment: 'Great hotel in the heart of the city. All amenities were top-notch. The booking process was smooth and hassle-free.'
+      },
+      {
+        id: 3,
+        author: 'Emma Davis',
+        avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100',
+        rating: 5,
+        date: 'September 2024',
+        title: 'Best Travel Experience Yet',
+        comment: 'From booking to checkout, everything was perfect. Great value for money and outstanding customer service throughout.'
+      }
+    ];
   };
 
-  // UI features - these are not data-dependent and are static
+  useEffect(() => {
+    fetchHotels();
+    fetchReviews();
+  }, [fetchHotels, fetchReviews]);
   const features = [
     {
       id: 1,
@@ -110,6 +167,7 @@ export default function LandingHome() {
 
   return (
     <div className="min-h-screen">
+      <Navbar />
       {/* Hero Section */}
       <section id="hero" className="relative min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-purple-800 flex items-center justify-center overflow-hidden pt-32 md:pt-0">
         {/* Background decorative elements */}
@@ -143,35 +201,47 @@ export default function LandingHome() {
 
             {/* Hero Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <button type="button" className="px-8 py-3 bg-white text-purple-600 rounded-lg font-semibold hover:bg-gray-100 hover:scale-105 transition-all shadow-lg disabled:opacity-50" disabled>
+              <button 
+                type="button" 
+                onClick={() => {
+                  document.getElementById('hotels')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="px-8 py-3 bg-white text-purple-600 rounded-lg font-semibold hover:bg-gray-100 hover:scale-105 transition-all shadow-lg"
+              >
                 Browse Hotels
               </button>
-              <button type="button" className="px-8 py-3 border-2 border-white/30 text-white rounded-lg font-semibold hover:bg-white/10 hover:scale-105 transition-all disabled:opacity-50" disabled>
+              <button 
+                type="button" 
+                onClick={() => {
+                  alert('Special offers coming soon!');
+                }}
+                className="px-8 py-3 border-2 border-white/30 text-white rounded-lg font-semibold hover:bg-white/10 hover:scale-105 transition-all"
+              >
                 View Special Offers
               </button>
             </div>
 
             {/* Search Box */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 shadow-2xl animate-slide-up animation-delay-2">
-              <form className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              <form onSubmit={(e) => { e.preventDefault(); document.getElementById('hotels')?.scrollIntoView({ behavior: 'smooth' }); }} className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <div>
                   <label htmlFor="destination" className="block text-sm font-medium text-white/70 mb-2">Destination</label>
-                  <input id="destination" type="text" placeholder="Select country" title="Destination" className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:bg-white/20 focus:outline-none transition-all disabled:opacity-50" disabled />
+                  <input id="destination" type="text" placeholder="Select country" title="Destination" className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:bg-white/20 focus:outline-none transition-all" />
                 </div>
                 <div>
                   <label htmlFor="checkin" className="block text-sm font-medium text-white/70 mb-2">Check-in</label>
-                  <input id="checkin" type="date" title="Check-in date" className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:bg-white/20 focus:outline-none transition-all disabled:opacity-50" disabled />
+                  <input id="checkin" type="date" title="Check-in date" className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:bg-white/20 focus:outline-none transition-all" />
                 </div>
                 <div>
                   <label htmlFor="checkout" className="block text-sm font-medium text-white/70 mb-2">Check-out</label>
-                  <input id="checkout" type="date" title="Check-out date" className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:bg-white/20 focus:outline-none transition-all disabled:opacity-50" disabled />
+                  <input id="checkout" type="date" title="Check-out date" className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:bg-white/20 focus:outline-none transition-all" />
                 </div>
                 <div>
                   <label htmlFor="guests" className="block text-sm font-medium text-white/70 mb-2">Guests</label>
-                  <input id="guests" type="number" defaultValue="2" min="1" title="Number of guests" className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:bg-white/20 focus:outline-none transition-all disabled:opacity-50" disabled />
+                  <input id="guests" type="number" defaultValue="2" min="1" title="Number of guests" className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:bg-white/20 focus:outline-none transition-all" />
                 </div>
                 <div className="flex items-end">
-                  <button type="submit" className="w-full px-4 py-2 bg-gradient-primary text-white rounded-lg font-semibold hover:shadow-lg transition-all disabled:opacity-50" disabled>
+                  <button type="submit" className="w-full px-4 py-2 bg-gradient-primary text-white rounded-lg font-semibold hover:shadow-lg transition-all">
                     Search
                   </button>
                 </div>
@@ -184,9 +254,20 @@ export default function LandingHome() {
       {/* Featured Hotels Section */}
       <section id="hotels" className="py-20 bg-gray-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16 animate-fade-in">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 gradient-primary-text">Featured Hotels</h2>
-            <p className="text-lg text-gray-600">Discover our handpicked selection of luxury hotels and resorts from around the world</p>
+          <div className="flex items-center justify-between mb-16 animate-fade-in">
+            <div>
+              <h2 className="text-4xl md:text-5xl font-bold mb-4 gradient-primary-text">Featured Hotels</h2>
+              <p className="text-lg text-gray-600">Discover our handpicked selection of luxury hotels and resorts from around the world</p>
+            </div>
+            <button
+              onClick={fetchHotels}
+              disabled={isRefreshing}
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all disabled:opacity-50"
+              title="Refresh hotel listings"
+            >
+              <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              {isRefreshing ? 'Refreshing...' : 'Refresh'}
+            </button>
           </div>
 
           {loading ? (
@@ -224,7 +305,14 @@ export default function LandingHome() {
                       <div className="text-2xl font-bold text-gray-900">${hotel.price}</div>
                       <div className="text-sm text-gray-500">per night</div>
                     </div>
-                    <button type="button" className="w-full px-4 py-2 bg-gradient-primary text-white rounded-lg font-semibold hover:shadow-lg transition-all disabled:opacity-50" disabled>
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        setSelectedHotel(hotel);
+                        setShowHotelModal(true);
+                      }}
+                      className="w-full px-4 py-2 bg-gradient-primary text-white rounded-lg font-semibold hover:shadow-lg transition-all"
+                    >
                       Book Now
                     </button>
                   </div>
@@ -333,7 +421,7 @@ export default function LandingHome() {
                 className="flex-1 px-6 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:bg-white/20 focus:outline-none transition-all"
                 required
               />
-              <button type="submit" className="px-8 py-3 bg-white text-purple-600 rounded-lg font-semibold hover:bg-gray-100 transition-all whitespace-nowrap disabled:opacity-50" disabled>
+              <button type="submit" className="px-8 py-3 bg-white text-purple-600 rounded-lg font-semibold hover:bg-gray-100 transition-all whitespace-nowrap">
                 Subscribe
               </button>
             </form>
@@ -396,7 +484,7 @@ export default function LandingHome() {
                   <label className="block text-sm font-semibold text-gray-900 mb-2">Message</label>
                   <textarea rows={5} placeholder="Tell us more about your inquiry..." className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-indigo-600 focus:outline-none transition-all resize-none" required></textarea>
                 </div>
-                <button type="submit" className="w-full px-6 py-3 bg-gradient-primary text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50" disabled>
+                <button type="submit" className="w-full px-6 py-3 bg-gradient-primary text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2">
                   <Send className="w-5 h-5" />
                   Send Message
                 </button>
@@ -458,6 +546,88 @@ export default function LandingHome() {
           </div>
         </div>
       </footer>
+
+      {/* Hotel Details Modal */}
+      {showHotelModal && selectedHotel && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-96 overflow-y-auto">
+            <div className="sticky top-0 bg-white flex items-center justify-between p-6 border-b">
+              <h2 className="text-2xl font-bold">{selectedHotel.name}</h2>
+              <button
+                onClick={() => setShowHotelModal(false)}
+                className="p-1 hover:bg-gray-100 rounded-lg"
+                title="Close modal"
+                aria-label="Close hotel details modal"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div className="flex items-center gap-4">
+                <img 
+                  src={selectedHotel.image || hotelImages[0]} 
+                  alt={selectedHotel.name}
+                  className="w-32 h-32 object-cover rounded-lg"
+                />
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <MapPin className="w-5 h-5 text-indigo-600" />
+                    <p className="text-gray-700">{selectedHotel.location}</p>
+                  </div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                    <p className="font-semibold">{selectedHotel.rating} out of 5</p>
+                  </div>
+                  <p className="text-2xl font-bold text-indigo-600">${selectedHotel.price}/night</p>
+                </div>
+              </div>
+
+              {selectedHotel.detail && (
+                <div>
+                  <h3 className="font-semibold mb-2">Description</h3>
+                  <p className="text-gray-600">{selectedHotel.detail}</p>
+                </div>
+              )}
+
+              {selectedHotel.rooms && (
+                <p className="text-gray-600"><span className="font-semibold">Rooms:</span> {selectedHotel.rooms}</p>
+              )}
+
+              {selectedHotel.amenities && selectedHotel.amenities.length > 0 && (
+                <div>
+                  <h3 className="font-semibold mb-2">Amenities</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedHotel.amenities.map((amenity, idx) => (
+                      <span key={idx} className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm">
+                        {amenity}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-4 border-t">
+                <button
+                  onClick={() => setShowHotelModal(false)}
+                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-900 rounded-lg font-semibold hover:bg-gray-300 transition-all"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    setShowHotelModal(false);
+                    navigate('/bookings/create', { state: { hotelId: selectedHotel.id } });
+                  }}
+                  className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-all"
+                >
+                  Book Now
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

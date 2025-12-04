@@ -24,6 +24,9 @@ import Register from './pages/auth/Register';
 
 // Landing Pages
 import Home from './pages/landing/Home';
+import Dashboard from './pages/landing/Dashboard';
+import Settings from './pages/landing/Settings';
+import MyBookings from './pages/landing/MyBookings';
 
 // Dashboard Pages
 import OverviewHome from './pages/dashboard/overview/Home';
@@ -138,6 +141,49 @@ function AppContent() {
 
           {/* Landing Routes */}
           <Route path="/landing" element={<LandingLayout><Home /></LandingLayout>} />
+
+          {/* User Dashboard Routes */}
+          <Route
+            path="/user-dashboard"
+            element={
+              <ProtectedRoute>
+                <LandingLayout>
+                  <Dashboard />
+                </LandingLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user-settings"
+            element={
+              <ProtectedRoute>
+                <LandingLayout>
+                  <Settings />
+                </LandingLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-bookings"
+            element={
+              <ProtectedRoute>
+                <LandingLayout>
+                  <MyBookings />
+                </LandingLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-bookings/:id"
+            element={
+              <ProtectedRoute>
+                <LandingLayout>
+                  <MyBookings />
+                </LandingLayout>
+              </ProtectedRoute>
+            }
+          />
+
           {/* Redirect root to login */}
           <Route path="/" element={<Navigate to="/login" replace />} />
 
