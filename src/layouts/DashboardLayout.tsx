@@ -1,5 +1,5 @@
 import React from 'react';
-import Navbar from '../Components/Navbar';
+import DashboardNavbar from '../Components/DashboardNavbar';
 import Sidebar from '../Components/Sidebar';
 
 interface DashboardLayoutProps {
@@ -9,7 +9,7 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <Navbar isDashboard={true} />
+      <DashboardNavbar />
       <Sidebar />
       {/* main uses responsive margin via CSS and the html root class toggled by Sidebar */}
       <main className="pt-16 min-h-screen transition-all duration-300">
