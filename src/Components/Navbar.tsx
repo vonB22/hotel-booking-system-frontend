@@ -185,12 +185,64 @@ export default function Navbar({ isDashboard = false }: NavbarProps) {
 
         {/* Logout button / Mobile menu */}
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setIsLogoutModalOpen(true)}
-            className="px-5 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition hidden sm:block"
-          >
-            Logout
-          </button>
+          {/* User Dropdown */}
+          <div className="relative hidden sm:block">
+            <button
+              onClick={toggleUserDropdown}
+              className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg transition"
+            >
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center text-white font-semibold text-sm">
+                U
+              </div>
+              <ChevronDown className="w-4 h-4 text-gray-600" />
+            </button>
+
+            {/* Dropdown Menu */}
+            {isUserDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 animate-slide-down overflow-hidden">
+                <button
+                  onClick={() => {
+                    navigate('/user-dashboard');
+                    setIsUserDropdownOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-700 flex items-center gap-2"
+                >
+                  <Hotel className="w-4 h-4" />
+                  Dashboard
+                </button>
+                <button
+                  onClick={() => {
+                    navigate('/my-bookings');
+                    setIsUserDropdownOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-700 flex items-center gap-2"
+                >
+                  <User className="w-4 h-4" />
+                  My Bookings
+                </button>
+                <button
+                  onClick={() => {
+                    navigate('/user-settings');
+                    setIsUserDropdownOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-700 flex items-center gap-2 border-t border-gray-100"
+                >
+                  <User className="w-4 h-4" />
+                  Settings
+                </button>
+                <button
+                  onClick={() => {
+                    setIsLogoutModalOpen(true);
+                    setIsUserDropdownOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-red-600 flex items-center gap-2 border-t border-gray-100"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Mobile menu */}
           <button
@@ -227,7 +279,34 @@ export default function Navbar({ isDashboard = false }: NavbarProps) {
               </button>
             ))}
 
-            <div className="border-t border-gray-200 pt-2 mt-2">
+            <div className="border-t border-gray-200 pt-2 mt-2 space-y-2">
+              <button
+                onClick={() => {
+                  navigate('/user-dashboard');
+                  setIsMenuOpen(false);
+                }}
+                className="w-full px-4 py-2 text-gray-700 font-medium bg-gray-100 hover:bg-gray-200 rounded-lg text-left"
+              >
+                Dashboard
+              </button>
+              <button
+                onClick={() => {
+                  navigate('/my-bookings');
+                  setIsMenuOpen(false);
+                }}
+                className="w-full px-4 py-2 text-gray-700 font-medium bg-gray-100 hover:bg-gray-200 rounded-lg text-left"
+              >
+                My Bookings
+              </button>
+              <button
+                onClick={() => {
+                  navigate('/user-settings');
+                  setIsMenuOpen(false);
+                }}
+                className="w-full px-4 py-2 text-gray-700 font-medium bg-gray-100 hover:bg-gray-200 rounded-lg text-left"
+              >
+                Settings
+              </button>
               <button
                 onClick={() => {
                   setIsLogoutModalOpen(true);

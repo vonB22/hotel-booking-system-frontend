@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { MapPin, Star, Mail, Phone, MapPinIcon, Send, RefreshCw, X } from 'lucide-react';
 import apiService from '../../services/api';
 import Navbar from '../../Components/Navbar';
+import heroImage from '../../assets/img/hero.jpg';
 import img1 from '../../assets/img/hotels/img1.jpg';
 import img2 from '../../assets/img/hotels/img2.jpg';
 import img3 from '../../assets/img/hotels/img3.jpg';
@@ -151,6 +152,22 @@ export default function LandingHome() {
 
   const hotelImages = [img1, img2, img3, img4, img5, img6];
 
+  // Function to get proper image URL from API or fallback to imported images
+  const getImageUrl = (apiImage: string | undefined, fallbackIndex: number): string => {
+    if (!apiImage) {
+      return hotelImages[fallbackIndex % hotelImages.length];
+    }
+    
+    // If it starts with http, it's already a full URL
+    if (apiImage.startsWith('http')) {
+      return apiImage;
+    }
+    
+    // If it's a relative path from API, construct the full URL
+    // Assuming API images are served from backend's public folder
+    return `/api/storage/${apiImage}` || hotelImages[fallbackIndex % hotelImages.length];
+  };
+
   const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
@@ -169,7 +186,10 @@ export default function LandingHome() {
     <div className="min-h-screen">
       <Navbar />
       {/* Hero Section */}
-      <section id="hero" className="relative min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-purple-800 flex items-center justify-center overflow-hidden pt-32 md:pt-0">
+      <section id="hero" className="relative min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-purple-800 flex items-center justify-center overflow-hidden pt-32 md:pt-0" style={{backgroundImage: `url(${heroImage})`, backgroundSize: 'cover', backgroundPosition: 'center'}}>
+        {/* Overlay for text visibility */}
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        
         {/* Background decorative elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-20 left-10 w-72 h-72 bg-white/5 rounded-full blur-3xl animate-float"></div>
@@ -188,7 +208,7 @@ export default function LandingHome() {
               <span className="text-sm font-medium">Trusted by 1M+ travelers</span>
             </div>
 
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight bg-gradient-to-r from-yellow-200 via-white to-pink-200 bg-clip-text text-transparent">
               Stay. Relax. Book<br />
               <span className="bg-gradient-to-r from-yellow-200 via-white to-pink-200 bg-clip-text text-transparent">
                 with ease.
@@ -282,9 +302,13 @@ export default function LandingHome() {
                 <div key={hotel.id} className={`group card-elevated hover-lift overflow-hidden animate-scale-in animation-delay-${Math.min(index, 10)}`}>
                   <div className="relative h-48 overflow-hidden bg-gray-200">
                     <img 
-                      src={hotel.image || hotelImages[index % hotelImages.length]} 
+                      src={getImageUrl(hotel.image, index)} 
                       alt={hotel.name}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      onError={(e) => {
+                        // Fallback to local image if API image fails
+                        (e.target as HTMLImageElement).src = hotelImages[index % hotelImages.length];
+                      }}
                     />
                     <div className="absolute top-3 left-3 bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-semibold">
                       Featured
@@ -566,9 +590,12 @@ export default function LandingHome() {
             <div className="p-6 space-y-4">
               <div className="flex items-center gap-4">
                 <img 
-                  src={selectedHotel.image || hotelImages[0]} 
+                  src={getImageUrl(selectedHotel.image, 0)} 
                   alt={selectedHotel.name}
                   className="w-32 h-32 object-cover rounded-lg"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = hotelImages[0];
+                  }}
                 />
                 <div>
                   <div className="flex items-center gap-2 mb-2">

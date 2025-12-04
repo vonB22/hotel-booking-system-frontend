@@ -179,7 +179,7 @@ export default function Settings() {
       {/* Header */}
       <div className="flex items-center gap-4">
         <button
-          onClick={() => navigate('/dashboard')}
+          onClick={() => navigate('/user-dashboard')}
           className="p-2 hover:bg-gray-100 rounded-lg"
           title="Back to dashboard"
         >
