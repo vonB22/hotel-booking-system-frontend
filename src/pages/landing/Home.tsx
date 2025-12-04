@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { MapPin, Star, Mail, Phone, MapPinIcon, Send, RefreshCw, X } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { MapPin, Star, Mail, Phone, MapPinIcon, Send, RefreshCw, X, Sparkles, TrendingUp, Award, Shield, Zap } from 'lucide-react';
 import apiService from '../../services/api';
 import Navbar from '../../Components/Navbar';
 import heroImage from '../../assets/img/hero.jpg';
@@ -42,13 +42,16 @@ export default function LandingHome() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
   const [showHotelModal, setShowHotelModal] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set());
+  
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
   const fetchHotels = useCallback(async () => {
     try {
       setIsRefreshing(true);
       const response = await apiService.getHotels();
       if (response.success && response.data && Array.isArray(response.data)) {
-        // Map hotel data to interface, with default values
         const mappedHotels = response.data.map((hotel: any) => ({
           id: hotel.id,
           name: hotel.name || 'Unnamed Hotel',
@@ -77,7 +80,6 @@ export default function LandingHome() {
       if (response.success && response.data && Array.isArray(response.data)) {
         setReviews(response.data.slice(0, 3));
       } else {
-        // Use mock reviews if API doesn't have them
         setReviews(getMockReviews());
       }
     } catch (error) {
@@ -86,7 +88,6 @@ export default function LandingHome() {
     }
   }, []);
 
-  // Mock reviews to display if API doesn't have them
   const getMockReviews = (): Review[] => {
     return [
       {
@@ -119,50 +120,80 @@ export default function LandingHome() {
     ];
   };
 
+  // Intersection Observer for scroll animations
+  useEffect(() => {
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setVisibleSections((prev) => new Set(prev).add(entry.target.id));
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -100px 0px' }
+    );
+
+    const sections = document.querySelectorAll('section[id]');
+    sections.forEach((section) => {
+      if (observerRef.current) {
+        observerRef.current.observe(section);
+      }
+    });
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, []);
+
   useEffect(() => {
     fetchHotels();
     fetchReviews();
+    setTimeout(() => setIsVisible(true), 100);
   }, [fetchHotels, fetchReviews]);
+
   const features = [
     {
       id: 1,
-      title: 'Safe',
-      description: 'Secure booking and payment processing with industry-leading encryption'
+      icon: Shield,
+      title: 'Safe & Secure',
+      description: 'Industry-leading encryption protects your data',
+      gradient: 'from-blue-500 to-indigo-600'
     },
     {
       id: 2,
-      title: 'Quality',
-      description: 'Handpicked hotels verified for excellence and customer satisfaction'
+      icon: Award,
+      title: 'Premium Quality',
+      description: 'Handpicked hotels verified for excellence',
+      gradient: 'from-purple-500 to-pink-600'
     },
     {
       id: 3,
-      title: 'Fast',
-      description: 'Instant confirmation and quick booking process in just minutes'
+      icon: Zap,
+      title: 'Lightning Fast',
+      description: 'Instant confirmation in just minutes',
+      gradient: 'from-yellow-500 to-orange-600'
     },
     {
       id: 4,
-      title: '24/7',
-      description: 'Round-the-clock customer support whenever you need assistance'
+      icon: Sparkles,
+      title: '24/7 Support',
+      description: 'Always here when you need assistance',
+      gradient: 'from-green-500 to-emerald-600'
     }
   ];
 
   const displayedHotels = expandedHotels ? hotels : hotels.slice(0, 6);
-
   const hotelImages = [img1, img2, img3, img4, img5, img6];
 
-  // Function to get proper image URL from API or fallback to imported images
   const getImageUrl = (apiImage: string | undefined, fallbackIndex: number): string => {
     if (!apiImage) {
       return hotelImages[fallbackIndex % hotelImages.length];
     }
-    
-    // If it starts with http, it's already a full URL
     if (apiImage.startsWith('http')) {
       return apiImage;
     }
-    
-    // If it's a relative path from API, construct the full URL
-    // Assuming API images are served from backend's public folder
     return `/api/storage/${apiImage}` || hotelImages[fallbackIndex % hotelImages.length];
   };
 
@@ -181,480 +212,633 @@ export default function LandingHome() {
   };
 
   return (
-    <div className="min-h-screen">
-      <Navbar />
-      {/* Hero Section */}
-      <section id="hero" className="relative min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-purple-800 flex items-center justify-center overflow-hidden pt-32 md:pt-0" style={{backgroundImage: `url(${heroImage})`, backgroundSize: 'cover', backgroundPosition: 'center'}}>
-        {/* Overlay for text visibility */}
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+    <>
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) scale(1); }
+          50% { transform: translateY(-20px) scale(1.05); }
+        }
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scaleIn {
+          from { opacity: 0; transform: scale(0.9); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes shimmer {
+          0% { background-position: -1000px 0; }
+          100% { background-position: 1000px 0; }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+        @keyframes slideInLeft {
+          from { opacity: 0; transform: translateX(-30px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideInRight {
+          from { opacity: 0; transform: translateX(30px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+        .animate-slide-up {
+          animation: slideUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .animate-scale-in {
+          animation: scaleIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .animate-fade-in {
+          animation: fadeIn 0.5s ease;
+        }
+        .animate-slide-in-left {
+          animation: slideInLeft 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .animate-slide-in-right {
+          animation: slideInRight 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
         
-        {/* Background decorative elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-white/5 rounded-full blur-3xl animate-float"></div>
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-float animation-delay-2"></div>
-        </div>
+        .skeleton-loading {
+          background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+          background-size: 1000px 100%;
+          animation: shimmer 2s infinite;
+        }
 
-        <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-white">
-          <div className="max-w-3xl mx-auto text-center animate-slide-up">
-            {/* Trust Badge */}
-            <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2 mb-8 animate-scale-in">
-              <div className="flex items-center -space-x-2">
-                <img src="https://images.unsplash.com/photo-1711113456507-c88b3777bc12?w=100" alt="Traveler" className="w-6 h-6 rounded-full border-2 border-white" />
-                <img src="https://images.unsplash.com/photo-1672685667592-0392f458f46f?w=100" alt="Traveler" className="w-6 h-6 rounded-full border-2 border-white" />
-                <img src="https://images.unsplash.com/photo-1669689290695-7f0efe5d4c8e?w=100" alt="Traveler" className="w-6 h-6 rounded-full border-2 border-white" />
+        .hotel-card {
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .hotel-card:hover {
+          transform: translateY(-8px);
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        .hotel-card img {
+          transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .hotel-card:hover img {
+          transform: scale(1.15);
+        }
+
+        .feature-card {
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .feature-card:hover {
+          transform: translateY(-12px) scale(1.05);
+        }
+
+        .review-card {
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .review-card:hover {
+          transform: translateY(-8px) rotate(-1deg);
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+        }
+
+        .glass-effect {
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .gradient-text {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+
+        .animation-delay-1 { animation-delay: 0.1s; }
+        .animation-delay-2 { animation-delay: 0.2s; }
+        .animation-delay-3 { animation-delay: 0.3s; }
+        .animation-delay-4 { animation-delay: 0.4s; }
+        .animation-delay-5 { animation-delay: 0.5s; }
+        .animation-delay-6 { animation-delay: 0.6s; }
+
+        input:focus, textarea:focus {
+          transform: translateY(-2px);
+        }
+
+        .section-visible {
+          animation: slideUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+      `}</style>
+
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/20 to-indigo-50/20">
+        <Navbar />
+        
+        {/* Hero Section */}
+        <section id="hero" className="relative min-h-screen bg-neutral-900/5 flex items-center justify-center overflow-hidden pt-32 md:pt-0" style={{backgroundImage: `url(${heroImage})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed'}}>
+          {/* Enhanced Overlay */}
+          <div className="absolute inset-0 bg-neutral-900/20"></div>
+          
+          {/* Animated Background Elements */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl animate-float"></div>
+            <div className="absolute bottom-20 right-10 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl animate-float animation-delay-3"></div>
+            <div className="absolute top-1/2 left-1/2 w-80 h-80 bg-pink-500/10 rounded-full blur-3xl animate-float animation-delay-5"></div>
+          </div>
+
+          <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-white">
+            <div className="max-w-4xl mx-auto text-center">
+              {/* Trust Badge */}
+              <div className={`inline-flex items-center gap-3 glass-effect rounded-full px-5 py-3 mb-8 shadow-lg ${isVisible ? 'animate-scale-in' : 'opacity-0'}`}>
+                <div className="flex items-center -space-x-2">
+                  <img src="https://images.unsplash.com/photo-1711113456507-c88b3777bc12?w=100" alt="Traveler" className="w-7 h-7 rounded-full border-2 border-white shadow-md" />
+                  <img src="https://images.unsplash.com/photo-1672685667592-0392f458f46f?w=100" alt="Traveler" className="w-7 h-7 rounded-full border-2 border-white shadow-md" />
+                  <img src="https://images.unsplash.com/photo-1669689290695-7f0efe5d4c8e?w=100" alt="Traveler" className="w-7 h-7 rounded-full border-2 border-white shadow-md" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-green-500" />
+                  <span className="font-semibold text-gray-900">Trusted by 1M+ travelers</span>
+                </div>
               </div>
-              <span className="text-sm font-medium">Trusted by 1M+ travelers</span>
-            </div>
 
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight bg-gradient-to-r from-yellow-200 via-white to-pink-200 bg-clip-text text-transparent">
-              Stay. Relax. Book<br />
-              <span className="bg-gradient-to-r from-yellow-200 via-white to-pink-200 bg-clip-text text-transparent">
-                with ease.
-              </span>
-            </h1>
+              <h1 className={`text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight ${isVisible ? 'animate-slide-up' : 'opacity-0'}`}>
+                <span className="inline-block bg-gradient-to-r from-yellow-200 via-white to-pink-200 bg-clip-text text-transparent">
+                  Stay. Relax. Book
+                </span>
+                <br />
+                <span className="inline-block bg-gradient-to-r from-yellow-200 via-white to-pink-200 bg-clip-text text-transparent animation-delay-1 animate-slide-up">
+                  with ease.
+                </span>
+              </h1>
 
-            <p className="text-xl md:text-2xl text-white/80 mb-8 max-w-2xl mx-auto">
-              Discover handpicked hotels, best rates, and instant booking for your perfect stay
-            </p>
+              <p className={`text-xl md:text-2xl text-white/90 mb-10 max-w-2xl mx-auto font-light ${isVisible ? 'animate-slide-up animation-delay-2' : 'opacity-0'}`}>
+                Discover handpicked hotels, best rates, and instant booking for your perfect stay
+              </p>
 
-            {/* Hero Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <button 
-                type="button" 
-                onClick={() => {
-                  document.getElementById('hotels')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="px-8 py-3 bg-white text-purple-600 rounded-lg font-semibold hover:bg-gray-100 hover:scale-105 transition-all shadow-lg"
-              >
-                Browse Hotels
-              </button>
-              <button 
-                type="button" 
-                onClick={() => {
-                  alert('Special offers coming soon!');
-                }}
-                className="px-8 py-3 border-2 border-white/30 text-white rounded-lg font-semibold hover:bg-white/10 hover:scale-105 transition-all"
-              >
-                View Special Offers
-              </button>
-            </div>
+              {/* Hero Buttons */}
+              <div className={`flex flex-col sm:flex-row gap-4 justify-center mb-12 ${isVisible ? 'animate-scale-in animation-delay-3' : 'opacity-0'}`}>
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    document.getElementById('hotels')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="group px-8 py-4 bg-white text-purple-600 rounded-xl font-bold hover:bg-gray-50 hover:scale-105 transition-all shadow-2xl hover:shadow-white/20 relative overflow-hidden"
+                >
+                  <span className="relative z-10 flex items-center justify-center gap-2">
+                    <Sparkles className="w-5 h-5" />
+                    Browse Hotels
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 opacity-0 group-hover:opacity-20 transition-opacity"></div>
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    alert('Special offers coming soon!');
+                  }}
+                  className="px-8 py-4 border-2 border-white/40 backdrop-blur-sm text-white rounded-xl font-bold hover:bg-white/10 hover:border-white/60 hover:scale-105 transition-all shadow-lg"
+                >
+                  View Special Offers
+                </button>
+              </div>
 
-            {/* Search Box */}
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 shadow-2xl animate-slide-up animation-delay-2">
-              <form onSubmit={(e) => { e.preventDefault(); document.getElementById('hotels')?.scrollIntoView({ behavior: 'smooth' }); }} className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <div>
-                  <label htmlFor="destination" className="block text-sm font-medium text-white/70 mb-2">Destination</label>
-                  <input id="destination" type="text" placeholder="Select country" title="Destination" className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:bg-white/20 focus:outline-none transition-all" />
-                </div>
-                <div>
-                  <label htmlFor="checkin" className="block text-sm font-medium text-white/70 mb-2">Check-in</label>
-                  <input id="checkin" type="date" title="Check-in date" className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:bg-white/20 focus:outline-none transition-all" />
-                </div>
-                <div>
-                  <label htmlFor="checkout" className="block text-sm font-medium text-white/70 mb-2">Check-out</label>
-                  <input id="checkout" type="date" title="Check-out date" className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:bg-white/20 focus:outline-none transition-all" />
-                </div>
-                <div>
-                  <label htmlFor="guests" className="block text-sm font-medium text-white/70 mb-2">Guests</label>
-                  <input id="guests" type="number" defaultValue="2" min="1" title="Number of guests" className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:bg-white/20 focus:outline-none transition-all" />
-                </div>
-                <div className="flex items-end">
-                  <button type="submit" className="w-full px-4 py-2 bg-gradient-primary text-white rounded-lg font-semibold hover:shadow-lg transition-all">
-                    Search
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Hotels Section */}
-      <section id="hotels" className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-16 animate-fade-in">
-            <div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-4 gradient-primary-text">Featured Hotels</h2>
-              <p className="text-lg text-gray-600">Discover our handpicked selection of luxury hotels and resorts from around the world</p>
-            </div>
-            <button
-              onClick={fetchHotels}
-              disabled={isRefreshing}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all disabled:opacity-50"
-              title="Refresh hotel listings"
-            >
-              <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
-              {isRefreshing ? 'Refreshing...' : 'Refresh'}
-            </button>
-          </div>
-
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="bg-white rounded-xl h-96 skeleton-loading"></div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {displayedHotels.map((hotel, index) => (
-                <div key={hotel.id} className={`group card-elevated hover-lift overflow-hidden animate-scale-in animation-delay-${Math.min(index, 10)}`}>
-                  <div className="relative h-48 overflow-hidden bg-gray-200">
-                    <img 
-                      src={getImageUrl(hotel.image, index)} 
-                      alt={hotel.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      onError={(e) => {
-                        // Fallback to local image if API image fails
-                        (e.target as HTMLImageElement).src = hotelImages[index % hotelImages.length];
-                      }}
-                    />
-                    <div className="absolute top-3 left-3 bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                      Featured
-                    </div>
-                    <div className="absolute top-3 right-3 bg-yellow-400 text-white px-2 py-1 rounded flex items-center gap-1 text-sm font-semibold">
-                      <Star className="w-4 h-4 fill-current" />
-                      {hotel.rating?.toFixed(1) || 'N/A'}
-                    </div>
+              {/* Enhanced Search Box */}
+              <div className={`glass-effect rounded-3xl p-6 md:p-8 border-2 border-white/30 shadow-2xl ${isVisible ? 'animate-slide-up animation-delay-4' : 'opacity-0'}`}>
+                <form onSubmit={(e) => { e.preventDefault(); document.getElementById('hotels')?.scrollIntoView({ behavior: 'smooth' }); }} className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                  <div className="group">
+                    <label htmlFor="destination" className="block text-sm font-semibold text-gray-800 mb-2">Destination</label>
+                    <input id="destination" type="text" placeholder="Where to?" title="Destination" className="w-full px-4 py-3 rounded-xl bg-white/80 backdrop-blur-sm border-2 border-white/50 text-gray-900 placeholder-gray-500 focus:bg-white focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-300 transition-all shadow-sm" />
                   </div>
-
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{hotel.name}</h3>
-                    <div className="flex items-center gap-2 text-gray-600 mb-4">
-                      <MapPin className="w-4 h-4" />
-                      <span className="text-sm">{hotel.location}</span>
-                    </div>
-                    <div className="mb-4">
-                      <div className="text-2xl font-bold text-gray-900">${hotel.price}</div>
-                      <div className="text-sm text-gray-500">per night</div>
-                    </div>
-                    <button 
-                      type="button"
-                      onClick={() => {
-                        setSelectedHotel(hotel);
-                        setShowHotelModal(true);
-                      }}
-                      className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 hover:shadow-lg transition-all"
-                    >
-                      Book Now
+                  <div className="group">
+                    <label htmlFor="checkin" className="block text-sm font-semibold text-gray-800 mb-2">Check-in</label>
+                    <input id="checkin" type="date" title="Check-in date" className="w-full px-4 py-3 rounded-xl bg-white/80 backdrop-blur-sm border-2 border-white/50 text-gray-900 focus:bg-white focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-300 transition-all shadow-sm" />
+                  </div>
+                  <div className="group">
+                    <label htmlFor="checkout" className="block text-sm font-semibold text-gray-800 mb-2">Check-out</label>
+                    <input id="checkout" type="date" title="Check-out date" className="w-full px-4 py-3 rounded-xl bg-white/80 backdrop-blur-sm border-2 border-white/50 text-gray-900 focus:bg-white focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-300 transition-all shadow-sm" />
+                  </div>
+                  <div className="group">
+                    <label htmlFor="guests" className="block text-sm font-semibold text-gray-800 mb-2">Guests</label>
+                    <input id="guests" type="number" defaultValue="2" min="1" title="Number of guests" className="w-full px-4 py-3 rounded-xl bg-white/80 backdrop-blur-sm border-2 border-white/50 text-gray-900 focus:bg-white focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-300 transition-all shadow-sm" />
+                  </div>
+                  <div className="flex items-end">
+                    <button type="submit" className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 text-white rounded-xl font-bold hover:from-purple-700 hover:via-indigo-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">
+                      Search Now
                     </button>
                   </div>
-                </div>
-              ))}
+                </form>
+              </div>
             </div>
-          )}
+          </div>
+        </section>
 
-          {hotels.length > 6 && (
-            <div className="text-center mt-12">
+        {/* Featured Hotels Section */}
+        <section id="hotels" className={`py-24 bg-gradient-to-br from-gray-50 via-white to-purple-50/30 ${visibleSections.has('hotels') ? 'section-visible' : 'opacity-0'}`}>
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col md:flex-row items-center justify-between mb-16 gap-6">
+              <div className="text-center md:text-left">
+                <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                  <span className="gradient-text">Featured Hotels</span>
+                </h2>
+                <p className="text-lg text-gray-600 max-w-2xl">Discover our handpicked selection of luxury hotels and resorts from around the world</p>
+              </div>
               <button
-                type="button"
-                onClick={() => setExpandedHotels(!expandedHotels)}
-                className="px-8 py-3 bg-white border-2 border-indigo-600 text-indigo-600 rounded-lg font-semibold hover:bg-indigo-50 transition-all disabled:opacity-50"
+                onClick={fetchHotels}
+                disabled={isRefreshing}
+                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 font-semibold"
+                title="Refresh hotel listings"
               >
-                {expandedHotels ? 'See less' : 'See all'}
+                <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+                {isRefreshing ? 'Refreshing...' : 'Refresh'}
               </button>
             </div>
-          )}
-        </div>
-      </section>
 
-      {/* Reviews Section */}
-      <section id="about" className="py-20 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16 animate-fade-in">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 gradient-primary-text">What Our Guests Say</h2>
-            <p className="text-lg text-gray-600">Read authentic reviews from travelers who stayed at our featured hotels</p>
-          </div>
-
-          {reviews.length > 0 ? (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {reviews.map((review, index) => (
-                  <div key={review.id} className={`card-elevated p-6 hover-lift animate-scale-in animation-delay-${Math.min(index, 10)}`}>
-                    <div className="flex items-start gap-4 mb-4">
-                      <img src={review.avatar} alt={review.author} className="w-12 h-12 rounded-full" />
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900">{review.author}</h4>
-                        <p className="text-sm text-gray-500">{review.date}</p>
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[1, 2, 3, 4, 5, 6].map(i => (
+                  <div key={i} className="glass-effect rounded-2xl h-96 skeleton-loading shadow-lg"></div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {displayedHotels.map((hotel, index) => (
+                  <div key={hotel.id} className={`hotel-card group glass-effect rounded-2xl overflow-hidden shadow-xl animate-scale-in animation-delay-${Math.min(index % 6 + 1, 6)}`}>
+                    <div className="relative h-56 overflow-hidden bg-gray-200">
+                      <img 
+                        src={getImageUrl(hotel.image, index)} 
+                        alt={hotel.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = hotelImages[index % hotelImages.length];
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      <div className="absolute top-3 left-3 flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg">
+                        <Sparkles className="w-3 h-3" />
+                        Featured
+                      </div>
+                      <div className="absolute top-3 right-3 flex items-center gap-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-2 rounded-full text-sm font-bold shadow-lg">
+                        <Star className="w-4 h-4 fill-current" />
+                        {hotel.rating?.toFixed(1) || 'N/A'}
                       </div>
                     </div>
-                    <div className="flex gap-1 mb-3">
-                      {[...Array(review.rating)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      ))}
+
+                    <div className="p-6">
+                      <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors">{hotel.name}</h3>
+                      <div className="flex items-center gap-2 text-gray-600 mb-4">
+                        <MapPin className="w-4 h-4 text-purple-600" />
+                        <span className="text-sm">{hotel.location}</span>
+                      </div>
+                      <div className="flex items-baseline gap-2 mb-4">
+                        <span className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">${hotel.price}</span>
+                        <span className="text-sm text-gray-500">per night</span>
+                      </div>
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          setSelectedHotel(hotel);
+                          setShowHotelModal(true);
+                        }}
+                        className="w-full px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold hover:from-indigo-700 hover:to-purple-700 hover:shadow-lg transition-all active:scale-95"
+                      >
+                        Book Now
+                      </button>
                     </div>
-                    <h5 className="font-semibold text-gray-900 mb-2">{review.title}</h5>
-                    <p className="text-gray-600 text-sm leading-relaxed">{review.comment}</p>
                   </div>
                 ))}
               </div>
-
-              <div className="text-center mt-12">
-                <button className="px-8 py-3 border-2 border-indigo-600 text-indigo-600 rounded-lg font-semibold hover:bg-indigo-50 transition-all">
-                  View All Reviews
-                </button>
-              </div>
-            </>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-gray-500">No reviews available yet</p>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Features/About Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16 animate-fade-in">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 gradient-primary-text">Why Choose StayEase</h2>
-            <p className="text-lg text-gray-600">Why travelers worldwide trust us for their perfect accommodations</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => (
-              <div key={feature.id} className={`text-center group hover-lift animate-scale-in animation-delay-${Math.min(index, 10)}`}>
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-2xl group-hover:scale-110 transition-transform">
-                  {feature.id === 1 && '🔒'}
-                  {feature.id === 2 && '⭐'}
-                  {feature.id === 3 && '⚡'}
-                  {feature.id === 4 && '📞'}
-                </div>
-                <h4 className="text-xl font-bold text-gray-900 mb-2">{feature.title}</h4>
-                <p className="text-gray-600">{feature.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Newsletter Section */}
-      <section className="py-20 bg-gradient-primary">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl mx-auto text-center text-white">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">Stay Updated with StayEase</h2>
-            <p className="text-lg mb-8 text-white/80">Subscribe to receive exclusive hotel deals, travel guides, and special offers straight to your inbox</p>
-
-            <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-3">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                className="flex-1 px-6 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:bg-white/20 focus:outline-none transition-all"
-                required
-              />
-              <button type="submit" className="px-8 py-3 bg-white text-purple-600 rounded-lg font-semibold hover:bg-gray-100 transition-all whitespace-nowrap">
-                Subscribe
-              </button>
-            </form>
-            
-            {emailSuccess && (
-              <p className="text-green-200 mt-3 animate-slide-down">✓ Successfully subscribed!</p>
             )}
-          </div>
-        </div>
-      </section>
 
-      {/* Contact Section */}
-      <section id="contact" className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16 animate-fade-in">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 gradient-primary-text">Get in Touch</h2>
-            <p className="text-lg text-gray-600">Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
-          </div>
-
-          {/* Contact Info Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            {[
-              { icon: Phone, title: 'Phone', text: '+1 (555) 123-4567', subtext: 'Mon-Fri 9am-6pm EST' },
-              { icon: Mail, title: 'Email', text: 'support@stayease.com', subtext: '24/7 support available' },
-              { icon: MapPinIcon, title: 'Office', text: '123 Travel Street', subtext: 'New York, NY 10001' }
-            ].map((item, index) => {
-              const Icon = item.icon;
-              return (
-                <div key={index} className={`card-elevated p-8 text-center hover-lift animate-scale-in animation-delay-${Math.min(index, 10)}`}>
-                  <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-indigo-100 flex items-center justify-center">
-                    <Icon className="w-6 h-6 text-indigo-600" />
-                  </div>
-                  <h4 className="font-bold text-lg text-gray-900 mb-2">{item.title}</h4>
-                  <p className="text-gray-900 font-semibold mb-1">{item.text}</p>
-                  <p className="text-sm text-gray-600">{item.subtext}</p>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Contact Form */}
-          <div className="max-w-2xl mx-auto">
-            <div className="card-elevated p-8">
-              <form onSubmit={handleContactSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-2">Name</label>
-                    <input type="text" placeholder="Your name" className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-indigo-600 focus:outline-none transition-all" required />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-2">Email</label>
-                    <input type="email" placeholder="your.email@example.com" className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-indigo-600 focus:outline-none transition-all" required />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">Subject</label>
-                  <input type="text" placeholder="How can we help?" className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-indigo-600 focus:outline-none transition-all" required />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">Message</label>
-                  <textarea rows={5} placeholder="Tell us more about your inquiry..." className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-indigo-600 focus:outline-none transition-all resize-none" required></textarea>
-                </div>
-                <button type="submit" className="w-full px-6 py-3 bg-gradient-primary text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2">
-                  <Send className="w-5 h-5" />
-                  Send Message
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-gray-300 py-16">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-8">
-            <div>
-              <h3 className="text-2xl font-bold gradient-primary-text mb-4">StayEase</h3>
-              <p className="text-gray-400 mb-6">Your trusted partner for finding the perfect accommodation worldwide.</p>
-              <div className="flex gap-4">
-                {['facebook', 'twitter', 'instagram', 'linkedin'].map((social, i) => (
-                  <a key={i} href="#" className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all hover:-translate-y-1">
-                    {social === 'facebook' && '📘'}
-                    {social === 'twitter' && '🐦'}
-                    {social === 'instagram' && '📷'}
-                    {social === 'linkedin' && '💼'}
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h5 className="font-bold text-white mb-4">Company</h5>
-              <ul className="space-y-3">
-                {['About Us', 'Careers', 'Press', 'Blog'].map((item, i) => (
-                  <li key={i}><a href="#" className="text-gray-400 hover:text-white transition-colors">{item}</a></li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h5 className="font-bold text-white mb-4">Support</h5>
-              <ul className="space-y-3">
-                {['Help Center', 'Safety Information', 'Cancellation Options', 'Contact Us'].map((item, i) => (
-                  <li key={i}><a href="#" className="text-gray-400 hover:text-white transition-colors">{item}</a></li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h5 className="font-bold text-white mb-4">Resources</h5>
-              <ul className="space-y-3">
-                {['List Your Property', 'Partnerships', 'Terms of Service', 'Privacy Policy'].map((item, i) => (
-                  <li key={i}><a href="#" className="text-gray-400 hover:text-white transition-colors">{item}</a></li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t border-gray-800 pt-8 text-center text-gray-500">
-            <p>&copy; {new Date().getFullYear()} StayEase. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
-
-      {/* Hotel Details Modal */}
-      {showHotelModal && selectedHotel && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-96 overflow-y-auto">
-            <div className="sticky top-0 bg-white flex items-center justify-between p-6 border-b">
-              <h2 className="text-2xl font-bold">{selectedHotel.name}</h2>
-              <button
-                onClick={() => setShowHotelModal(false)}
-                className="p-1 hover:bg-gray-100 rounded-lg"
-                title="Close modal"
-                aria-label="Close hotel details modal"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            
-            <div className="p-6 space-y-4">
-              <div className="flex items-center gap-4">
-                <img 
-                  src={getImageUrl(selectedHotel.image, 0)} 
-                  alt={selectedHotel.name}
-                  className="w-32 h-32 object-cover rounded-lg"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = hotelImages[0];
-                  }}
-                />
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <MapPin className="w-5 h-5 text-indigo-600" />
-                    <p className="text-gray-700">{selectedHotel.location}</p>
-                  </div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                    <p className="font-semibold">{selectedHotel.rating} out of 5</p>
-                  </div>
-                  <p className="text-2xl font-bold text-indigo-600">${selectedHotel.price}/night</p>
-                </div>
-              </div>
-
-              {selectedHotel.detail && (
-                <div>
-                  <h3 className="font-semibold mb-2">Description</h3>
-                  <p className="text-gray-600">{selectedHotel.detail}</p>
-                </div>
-              )}
-
-              {selectedHotel.rooms && (
-                <p className="text-gray-600"><span className="font-semibold">Rooms:</span> {selectedHotel.rooms}</p>
-              )}
-
-              {selectedHotel.amenities && selectedHotel.amenities.length > 0 && (
-                <div>
-                  <h3 className="font-semibold mb-2">Amenities</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedHotel.amenities.map((amenity, idx) => (
-                      <span key={idx} className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm">
-                        {amenity}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="flex gap-3 pt-4 border-t">
-                <button
-                  onClick={() => setShowHotelModal(false)}
-                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-900 rounded-lg font-semibold hover:bg-gray-300 transition-all"
-                >
-                  Close
-                </button>
+            {hotels.length > 6 && (
+              <div className="text-center mt-12">
                 <button
                   type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowHotelModal(false);
-                    alert('Booking feature coming soon! For now, please contact our support team.');
-                  }}
-                  className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-all"
+                  onClick={() => setExpandedHotels(!expandedHotels)}
+                  className="px-8 py-4 glass-effect border-2 border-indigo-600 text-indigo-600 rounded-xl font-bold hover:bg-indigo-50 transition-all shadow-lg hover:shadow-xl hover:scale-105"
                 >
-                  Book Now
+                  {expandedHotels ? 'See less' : 'See all hotels'}
                 </button>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Reviews Section */}
+        <section id="about" className={`py-24 bg-white ${visibleSections.has('about') ? 'section-visible' : 'opacity-0'}`}>
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                <span className="gradient-text">What Our Guests Say</span>
+              </h2>
+              <p className="text-lg text-gray-600">Read authentic reviews from travelers who stayed at our featured hotels</p>
+            </div>
+
+            {reviews.length > 0 ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                  {reviews.map((review, index) => (
+                    <div key={review.id} className={`review-card glass-effect p-8 rounded-2xl shadow-xl animate-scale-in animation-delay-${index + 1}`}>
+                      <div className="flex items-start gap-4 mb-4">
+                        <img src={review.avatar} alt={review.author} className="w-14 h-14 rounded-full ring-4 ring-purple-100" />
+                        <div className="flex-1">
+                          <h4 className="font-bold text-gray-900 text-lg">{review.author}</h4>
+                          <p className="text-sm text-gray-500">{review.date}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-1 mb-4">
+                        {[...Array(review.rating)].map((_, i) => (
+                          <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                        ))}
+                      </div>
+                      <h5 className="font-bold text-gray-900 mb-3 text-lg">{review.title}</h5>
+                      <p className="text-gray-600 leading-relaxed">{review.comment}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="text-center">
+                  <button className="px-8 py-4 glass-effect border-2 border-indigo-600 text-indigo-600 rounded-xl font-bold hover:bg-indigo-50 transition-all shadow-lg hover:shadow-xl hover:scale-105">
+                    View All Reviews
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-500">No reviews available yet</p>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Features Section */}
+        <section className={`py-24 bg-gradient-to-br from-gray-50 via-purple-50/30 to-indigo-50/30 ${visibleSections.has('hotels') ? 'section-visible' : 'opacity-0'}`}>
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                <span className="gradient-text">Why Choose StayEase</span>
+              </h2>
+              <p className="text-lg text-gray-600">Why travelers worldwide trust us for their perfect accommodations</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {features.map((feature, index) => {
+                const Icon = feature.icon;
+                return (
+                  <div key={feature.id} className={`feature-card text-center group animate-scale-in animation-delay-${index + 1}`}>
+                    <div className="relative inline-block mb-6">
+                      <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity`}></div>
+                      <div className={`relative w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center text-white shadow-xl group-hover:scale-110 transition-transform`}>
+                        <Icon className="w-10 h-10" />
+                      </div>
+                    </div>
+                    <h4 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h4>
+                    <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* Newsletter Section */}
+        <section className="py-24 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-10 left-10 w-72 h-72 bg-white rounded-full blur-3xl animate-float"></div>
+            <div className="absolute bottom-10 right-10 w-96 h-96 bg-white rounded-full blur-3xl animate-float animation-delay-3"></div>
+          </div>
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="max-w-3xl mx-auto text-center text-white">
+              <Sparkles className="w-12 h-12 mx-auto mb-4 animate-pulse" />
+              <h2 className="text-4xl md:text-5xl font-bold mb-6">Stay Updated with StayEase</h2>
+              <p className="text-xl mb-10 text-white/90">Subscribe to receive exclusive hotel deals, travel guides, and special offers straight to your inbox</p>
+
+              <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  className="flex-1 px-6 py-4 rounded-xl glass-effect border-2 border-white/30 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-white transition-all shadow-lg font-medium"
+                  required
+                />
+                <button type="submit" className="px-8 py-4 bg-white text-purple-600 rounded-xl font-bold hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 whitespace-nowrap">
+                  Subscribe
+                </button>
+              </form>
+              
+              {emailSuccess && (
+                <div className="mt-6 glass-effect text-green-700 p-4 rounded-xl animate-scale-in font-semibold flex items-center justify-center gap-2">
+                  <Sparkles className="w-5 h-5" />
+                  Successfully subscribed!
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* Contact Section */}
+        <section id="contact" className={`py-24 bg-white ${visibleSections.has('contact') ? 'section-visible' : 'opacity-0'}`}>
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                <span className="gradient-text">Get in Touch</span>
+              </h2>
+              <p className="text-lg text-gray-600">Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
+            </div>
+
+            {/* Contact Info Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+              {[
+                { icon: Phone, title: 'Phone', text: '+1 (555) 123-4567', subtext: 'Mon-Fri 9am-6pm EST', gradient: 'from-blue-500 to-indigo-600' },
+                { icon: Mail, title: 'Email', text: 'support@stayease.com', subtext: '24/7 support available', gradient: 'from-purple-500 to-pink-600' },
+                { icon: MapPinIcon, title: 'Office', text: '123 Travel Street', subtext: 'New York, NY 10001', gradient: 'from-green-500 to-emerald-600' }
+              ].map((item, index) => {
+                const Icon = item.icon;
+                return (
+                  <div key={index} className={`glass-effect p-8 text-center rounded-2xl shadow-xl hover:shadow-2xl transition-all hover:-translate-y-2 animate-scale-in animation-delay-${index + 1}`}>
+                    <div className="relative inline-block mb-4">
+                      <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient} rounded-xl blur opacity-50`}></div>
+                      <div className={`relative w-16 h-16 mx-auto rounded-xl bg-gradient-to-br ${item.gradient} flex items-center justify-center shadow-lg`}>
+                        <Icon className="w-8 h-8 text-white" />
+                      </div>
+                    </div>
+                    <h4 className="font-bold text-xl text-gray-900 mb-2">{item.title}</h4>
+                    <p className="text-gray-900 font-semibold mb-1">{item.text}</p>
+                    <p className="text-sm text-gray-600">{item.subtext}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Contact Form */}
+            <div className="max-w-3xl mx-auto">
+              <div className="glass-effect p-8 md:p-10 rounded-3xl shadow-2xl">
+                <form onSubmit={handleContactSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-900 mb-2">Name</label>
+                      <input type="text" placeholder="Your name" className="w-full px-5 py-3 rounded-xl border-2 border-gray-300 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-300 transition-all bg-white shadow-sm" required />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-900 mb-2">Email</label>
+                      <input type="email" placeholder="your.email@example.com" className="w-full px-5 py-3 rounded-xl border-2 border-gray-300 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-300 transition-all bg-white shadow-sm" required />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-900 mb-2">Subject</label>
+                    <input type="text" placeholder="How can we help?" className="w-full px-5 py-3 rounded-xl border-2 border-gray-300 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-300 transition-all bg-white shadow-sm" required />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-900 mb-2">Message</label>
+                    <textarea rows={6} placeholder="Tell us more about your inquiry..." className="w-full px-5 py-3 rounded-xl border-2 border-gray-300 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-300 transition-all resize-none bg-white shadow-sm" required></textarea>
+                  </div>
+                  <button type="submit" className="w-full px-6 py-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white rounded-xl font-bold hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 active:scale-95">
+                    <Send className="w-5 h-5" />
+                    Send Message
+                  </button>
+                </form>
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="bg-neutral-900 text-gray-300 py-16">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-8">
+              <div>
+                <h3 className="text-2xl font-bold gradient-text mb-4">StayEase</h3>
+                <p className="text-gray-400 mb-6 leading-relaxed">Your trusted partner for finding the perfect accommodation worldwide.</p>
+                <div className="flex gap-4">
+                  {['📘', '🐦', '📷', '💼'].map((emoji, i) => (
+                    <a key={i} href="#" className="w-12 h-12 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all hover:-translate-y-1 text-xl shadow-lg">
+                      {emoji}
+                    </a>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h5 className="font-bold text-white mb-4 text-lg">Company</h5>
+                <ul className="space-y-3">
+                  {['About Us', 'Careers', 'Press', 'Blog'].map((item, i) => (
+                    <li key={i}><a href="#" className="text-gray-400 hover:text-white transition-colors hover:translate-x-1 inline-block">{item}</a></li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <h5 className="font-bold text-white mb-4 text-lg">Support</h5>
+                <ul className="space-y-3">
+                  {['Help Center', 'Safety Information', 'Cancellation Options', 'Contact Us'].map((item, i) => (
+                    <li key={i}><a href="#" className="text-gray-400 hover:text-white transition-colors hover:translate-x-1 inline-block">{item}</a></li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <h5 className="font-bold text-white mb-4 text-lg">Resources</h5>
+                <ul className="space-y-3">
+                  {['List Your Property', 'Partnerships', 'Terms of Service', 'Privacy Policy'].map((item, i) => (
+                    <li key={i}><a href="#" className="text-gray-400 hover:text-white transition-colors hover:translate-x-1 inline-block">{item}</a></li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="border-t border-gray-800 pt-8 text-center">
+              <p className="text-gray-500">&copy; {new Date().getFullYear()} StayEase. All rights reserved. Made with ❤️ for travelers.</p>
+            </div>
+          </div>
+        </footer>
+
+        {/* Enhanced Hotel Details Modal */}
+        {showHotelModal && selectedHotel && (
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+            <div className="glass-effect rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-scale-in">
+              <div className="sticky top-0 glass-effect flex items-center justify-between p-6 border-b border-gray-200 rounded-t-3xl">
+                <h2 className="text-2xl font-bold gradient-text">{selectedHotel.name}</h2>
+                <button
+                  onClick={() => setShowHotelModal(false)}
+                  className="p-2 hover:bg-gray-100 rounded-xl transition-all hover:scale-110 active:scale-95"
+                  title="Close modal"
+                  aria-label="Close hotel details modal"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              
+              <div className="p-8 space-y-6">
+                <div className="flex flex-col md:flex-row items-start gap-6">
+                  <img 
+                    src={getImageUrl(selectedHotel.image, 0)} 
+                    alt={selectedHotel.name}
+                    className="w-full md:w-48 h-48 object-cover rounded-2xl shadow-lg"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = hotelImages[0];
+                    }}
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-3">
+                      <MapPin className="w-5 h-5 text-purple-600" />
+                      <p className="text-gray-700 font-medium">{selectedHotel.location}</p>
+                    </div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                      <p className="font-bold text-gray-900">{selectedHotel.rating} out of 5</p>
+                    </div>
+                    <p className="text-4xl font-bold gradient-text">${selectedHotel.price}<span className="text-lg text-gray-600 font-normal">/night</span></p>
+                  </div>
+                </div>
+
+                {selectedHotel.detail && (
+                  <div>
+                    <h3 className="font-bold text-xl mb-3 text-gray-900">Description</h3>
+                    <p className="text-gray-600 leading-relaxed">{selectedHotel.detail}</p>
+                  </div>
+                )}
+
+                {selectedHotel.rooms && (
+                  <div className="glass-effect p-4 rounded-xl">
+                    <p className="text-gray-700"><span className="font-bold text-gray-900">Rooms Available:</span> {selectedHotel.rooms}</p>
+                  </div>
+                )}
+
+                {selectedHotel.amenities && selectedHotel.amenities.length > 0 && (
+                  <div>
+                    <h3 className="font-bold text-xl mb-3 text-gray-900">Amenities</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedHotel.amenities.map((amenity, idx) => (
+                        <span key={idx} className="px-4 py-2 bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-700 rounded-xl text-sm font-semibold border border-purple-200">
+                          {amenity}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-4 pt-6 border-t border-gray-200">
+                  <button
+                    onClick={() => setShowHotelModal(false)}
+                    className="flex-1 px-6 py-3 bg-gray-100 text-gray-900 rounded-xl font-bold hover:bg-gray-200 transition-all active:scale-95"
+                  >
+                    Close
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowHotelModal(false);
+                      alert('Booking feature coming soon! For now, please contact our support team.');
+                    }}
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl active:scale-95"
+                  >
+                    Book Now
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 }
