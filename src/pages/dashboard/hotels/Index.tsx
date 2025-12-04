@@ -98,8 +98,8 @@ export default function Index() {
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
     return (
-      hotel.name.toLowerCase().includes(term) ||
-      hotel.location.toLowerCase().includes(term)
+      (hotel.name && hotel.name.toLowerCase().includes(term)) ||
+      (hotel.location && hotel.location.toLowerCase().includes(term))
     );
   });
 

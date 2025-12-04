@@ -92,9 +92,9 @@ export default function Index() {
   const filteredBookings = bookings.filter(booking => {
     const matchesSearch = !searchTerm || 
       String(booking.id).includes(searchTerm) ||
-      booking.notes.toLowerCase().includes(searchTerm.toLowerCase());
+      (booking.notes && booking.notes.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    const matchesStatus = !statusFilter || booking.status.toLowerCase() === statusFilter.toLowerCase();
+    const matchesStatus = !statusFilter || (booking.status && booking.status.toLowerCase() === statusFilter.toLowerCase());
     
     return matchesSearch && matchesStatus;
   });
