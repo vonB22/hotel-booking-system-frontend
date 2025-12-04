@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, AlertCircle, CheckCircle } from 'lucide-react';
+import { Save, AlertCircle, CheckCircle } from 'lucide-react';
 import Navbar from '../../Components/Navbar';
 import apiService from '../../services/api';
 
@@ -177,18 +177,18 @@ export default function Settings() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <button
-          onClick={() => navigate('/user-dashboard')}
-          className="p-2 hover:bg-gray-100 rounded-lg"
-          title="Back to dashboard"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
+      <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold">Settings</h1>
           <p className="text-gray-600">Manage your account settings</p>
         </div>
+        <button
+          onClick={() => navigate('/landing')}
+          className="px-4 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 transition-all font-semibold"
+          title="Back to website"
+        >
+          Back to Website
+        </button>
       </div>
 
       {error && (

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { MapPin, Star, Mail, Phone, MapPinIcon, Send, RefreshCw, X } from 'lucide-react';
 import apiService from '../../services/api';
 import Navbar from '../../Components/Navbar';
@@ -34,7 +33,6 @@ interface Review {
 }
 
 export default function LandingHome() {
-  const navigate = useNavigate();
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
@@ -335,7 +333,7 @@ export default function LandingHome() {
                         setSelectedHotel(hotel);
                         setShowHotelModal(true);
                       }}
-                      className="w-full px-4 py-2 bg-gradient-primary text-white rounded-lg font-semibold hover:shadow-lg transition-all"
+                      className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 hover:shadow-lg transition-all"
                     >
                       Book Now
                     </button>
@@ -642,9 +640,11 @@ export default function LandingHome() {
                   Close
                 </button>
                 <button
-                  onClick={() => {
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
                     setShowHotelModal(false);
-                    navigate('/bookings/create', { state: { hotelId: selectedHotel.id } });
+                    alert('Booking feature coming soon! For now, please contact our support team.');
                   }}
                   className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-all"
                 >

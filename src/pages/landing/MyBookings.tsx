@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Calendar, Users, MapPin, DollarSign, Clock, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import { Calendar, Users, MapPin, DollarSign, Clock, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import Navbar from '../../Components/Navbar';
 import apiService from '../../services/api';
 
@@ -113,18 +113,18 @@ export default function MyBookings() {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <button
-            onClick={() => navigate('/user-dashboard')}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            title="Back to dashboard"
-          >
-            <ArrowLeft className="w-6 h-6" />
-          </button>
+        <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold">My Bookings</h1>
             <p className="text-gray-600 mt-1">View and manage your hotel bookings</p>
           </div>
+          <button
+            onClick={() => navigate('/landing')}
+            className="px-4 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 transition-all font-semibold"
+            title="Back to website"
+          >
+            Back to Website
+          </button>
         </div>
 
         {error && (
