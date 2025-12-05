@@ -44,6 +44,10 @@ export default function LandingHome() {
   const [showHotelModal, setShowHotelModal] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set());
+  const [bookingForm, setBookingForm] = useState({ checkIn: '', checkOut: '', guests: 1 });
+  const [isBooking, setIsBooking] = useState(false);
+  const [bookingError, setBookingError] = useState('');
+  const [bookingSuccess, setBookingSuccess] = useState(false);
   
   const observerRef = useRef<IntersectionObserver | null>(null);
 
@@ -203,6 +207,88 @@ export default function LandingHome() {
       setEmailSuccess(true);
       setEmail('');
       setTimeout(() => setEmailSuccess(false), 3000);
+    }
+  };
+
+  const handleBooking = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBookingError('');
+    setBookingSuccess(false);
+
+    // Validate form
+    if (!bookingForm.checkIn || !bookingForm.checkOut || bookingForm.guests < 1) {
+      setBookingError('Please fill in all fields');
+      return;
+    }
+
+    // Calculate max guests based on rooms (assume 2 guests per room as standard)
+    const maxGuests = selectedHotel.rooms ? selectedHotel.rooms * 2 : 12;
+    
+    // Validate guest count
+    if (bookingForm.guests < 1) {
+      setBookingError('At least 1 guest is required');
+      return;
+    }
+    
+    if (bookingForm.guests > maxGuests) {
+      setBookingError(`Maximum ${maxGuests} guests allowed for this hotel (${selectedHotel.rooms} rooms × 2 guests/room)`);
+      return;
+    }
+    
+    if (bookingForm.guests > 100) {
+      setBookingError('Invalid guest count. Please contact support for group bookings.');
+      return;
+    }
+
+    // Check if user is authenticated
+    const token = localStorage.getItem('api_token');
+    if (!token) {
+      setBookingError('Please log in to book a hotel');
+      return;
+    }
+
+    // Validate dates
+    const checkInDate = new Date(bookingForm.checkIn);
+    const checkOutDate = new Date(bookingForm.checkOut);
+    
+    if (checkOutDate <= checkInDate) {
+      setBookingError('Check-out date must be after check-in date');
+      return;
+    }
+
+    if (selectedHotel) {
+      setIsBooking(true);
+      try {
+        const bookingData = {
+          product_id: selectedHotel.id,
+          product_name: selectedHotel.name,
+          check_in: bookingForm.checkIn,
+          check_out: bookingForm.checkOut,
+          guests: bookingForm.guests,
+          price: selectedHotel.price || 0,
+          notes: `Booking for ${bookingForm.guests} guest(s)`
+        };
+
+        const response = await apiService.createBooking(bookingData);
+        
+        if (response.success) {
+          setBookingSuccess(true);
+          setBookingForm({ checkIn: '', checkOut: '', guests: 1 });
+          
+          // Close modal after 2 seconds
+          setTimeout(() => {
+            setShowHotelModal(false);
+            setSelectedHotel(null);
+          }, 2000);
+        } else {
+          setBookingError(response.error || 'Failed to create booking. Please try again.');
+        }
+      } catch (error) {
+        console.error('Booking error:', error);
+        setBookingError('An error occurred while booking. Please try again.');
+      } finally {
+        setIsBooking(false);
+      }
     }
   };
 
@@ -815,24 +901,86 @@ export default function LandingHome() {
                   </div>
                 )}
 
-                <div className="flex gap-4 pt-6 border-t border-gray-200">
-                  <button
-                    onClick={() => setShowHotelModal(false)}
-                    className="flex-1 px-6 py-3 bg-gray-100 text-gray-900 rounded-xl font-bold hover:bg-gray-200 transition-all active:scale-95"
-                  >
-                    Close
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setShowHotelModal(false);
-                      alert('Booking feature coming soon! For now, please contact our support team.');
-                    }}
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl active:scale-95"
-                  >
-                    Book Now
-                  </button>
+                {/* Booking Form */}
+                <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-6 rounded-2xl border border-purple-200/50">
+                  <h3 className="font-bold text-xl mb-4 text-gray-900">Book Your Stay</h3>
+                  
+                  {bookingError && (
+                    <div className="mb-4 p-3 bg-red-100 border border-red-300 text-red-700 rounded-xl text-sm">
+                      {bookingError}
+                    </div>
+                  )}
+                  
+                  {bookingSuccess && (
+                    <div className="mb-4 p-3 bg-green-100 border border-green-300 text-green-700 rounded-xl text-sm">
+                      ✓ Booking confirmed! You'll be redirected shortly.
+                    </div>
+                  )}
+
+                  <form onSubmit={handleBooking} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Check-in Date</label>
+                        <input
+                          type="date"
+                          value={bookingForm.checkIn}
+                          onChange={(e) => setBookingForm({ ...bookingForm, checkIn: e.target.value })}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                          min={new Date().toISOString().split('T')[0]}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Check-out Date</label>
+                        <input
+                          type="date"
+                          value={bookingForm.checkOut}
+                          onChange={(e) => setBookingForm({ ...bookingForm, checkOut: e.target.value })}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                          min={bookingForm.checkIn || new Date().toISOString().split('T')[0]}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Number of Guests {selectedHotel.rooms && <span className="text-gray-500 font-normal">(Max: {selectedHotel.rooms * 2})</span>}
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max={selectedHotel.rooms ? selectedHotel.rooms * 2 : 100}
+                        value={bookingForm.guests}
+                        onChange={(e) => {
+                          const value = Math.max(1, Math.min(parseInt(e.target.value) || 1, selectedHotel.rooms ? selectedHotel.rooms * 2 : 100));
+                          setBookingForm({ ...bookingForm, guests: value });
+                        }}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                        title="Enter number of guests"
+                        required
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        {selectedHotel.rooms ? `Based on ${selectedHotel.rooms} available room(s) (2 guests per room)` : 'Enter number of guests'}
+                      </p>
+                    </div>
+
+                    <div className="flex gap-4 pt-4 border-t border-purple-200">
+                      <button
+                        type="button"
+                        onClick={() => setShowHotelModal(false)}
+                        className="flex-1 px-6 py-3 bg-gray-100 text-gray-900 rounded-xl font-bold hover:bg-gray-200 transition-all active:scale-95"
+                        disabled={isBooking}
+                      >
+                        Close
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isBooking || bookingSuccess}
+                        className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isBooking ? 'Processing...' : bookingSuccess ? 'Booking Confirmed!' : 'Confirm Booking'}
+                      </button>
+                    </div>
+                  </form>
                 </div>
               </div>
             </div>
