@@ -1,362 +1,351 @@
 import { useEffect, useState } from 'react';
-import { Calendar, Building2, Users, TrendingUp } from 'lucide-react';
-import { Line, Bar } from 'react-chartjs-2';
+import { Users, Building2, Calendar, Shield, RotateCcw } from 'lucide-react';
+import { Doughnut, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
+  ArcElement,
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
   BarElement,
-  Title,
   Tooltip,
   Legend,
 } from 'chart.js';
 import apiService from '../../../services/api';
-import noImage from '../../../assets/img/no-image.jpg';
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend);
+ChartJS.register(ArcElement, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Tooltip, Legend);
 
-interface Stat {
-  label: string;
-  value: string;
-  icon: any;
-  color: string;
+interface StatsData {
+  users: number;
+  hotels: number;
+  bookings: number;
+  roles: number;
+  bookings_pending: number;
+  booking_status: {
+    pending: number;
+    confirmed: number;
+    completed: number;
+    cancelled: number;
+  };
+  monthly_bookings: number[];
 }
 
 interface RecentBooking {
-  id: string | number;
-  user_name?: string;
-  user?: { name?: string };
-  hotel_name?: string;
-  product_name?: string;
-  hotel?: { name?: string };
-  product?: { name?: string };
-  check_in?: string;
-  check_in_date?: string;
-  status?: string;
-  [key: string]: any;
-}
-
-interface ChartData {
-  labels: string[];
-  datasets: any[];
+  id: number;
+  user_name: string;
+  hotel_name: string;
+  check_in: string;
+  check_out: string;
+  status: string;
 }
 
 export default function Home() {
-  const [stats, setStats] = useState<Stat[]>([]);
+  const [stats, setStats] = useState<StatsData | null>(null);
   const [recentBookings, setRecentBookings] = useState<RecentBooking[]>([]);
-  const [bookingTrendsData, setBookingTrendsData] = useState<ChartData | null>(null);
-  const [revenueData, setRevenueData] = useState<ChartData | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const defaultStats: Stat[] = [
-    { label: 'Total Bookings', value: '0', icon: Calendar, color: 'bg-blue-500' },
-    { label: 'Total Hotels', value: '0', icon: Building2, color: 'bg-green-500' },
-    { label: 'Total Users', value: '0', icon: Users, color: 'bg-purple-500' },
-    { label: 'Revenue', value: '$0', icon: TrendingUp, color: 'bg-orange-500' },
-  ];
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
+  const fetchStats = async () => {
+    setIsRefreshing(true);
     try {
-      setError(null);
-
-      const [statsResponse, overviewResponse, bookingsResponse] = await Promise.all([
-        apiService.getOverviewStats(),
-        apiService.getOverview(),
-        apiService.getBookings(1, 4),
-      ]);
-
-      if (statsResponse.success && statsResponse.data) {
-        const data = statsResponse.data as any;
-        const processedStats: Stat[] = [
-          {
-            label: 'Total Bookings',
-            value: String(data.bookings || 0),
-            icon: Calendar,
-            color: 'bg-blue-500',
-          },
-          {
-            label: 'Total Hotels',
-            value: String(data.hotels || 0),
-            icon: Building2,
-            color: 'bg-green-500',
-          },
-          {
-            label: 'Total Users',
-            value: String(data.users || 0),
-            icon: Users,
-            color: 'bg-purple-500',
-          },
-          {
-            label: 'Revenue',
-            value: `$${(data.revenue || 0).toLocaleString()}`,
-            icon: TrendingUp,
-            color: 'bg-orange-500',
-          },
-        ];
-        setStats(processedStats);
-
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const bookingData = data.monthly_bookings || Array(12).fill(0).map(() => Math.floor(Math.random() * 30));
-        const revenueDataPoints = bookingData.map((b: number) => Math.floor(b * 50 + Math.random() * 1000));
-
-        setBookingTrendsData({
-          labels: months,
-          datasets: [
-            {
-              label: 'Bookings',
-              data: bookingData,
-              borderColor: 'rgb(59, 130, 246)',
-              backgroundColor: 'rgba(59, 130, 246, 0.1)',
-              borderWidth: 2,
-              fill: true,
-              tension: 0.4,
-            },
-          ],
-        });
-
-        setRevenueData({
-          labels: months,
-          datasets: [
-            {
-              label: 'Revenue ($)',
-              data: revenueDataPoints,
-              backgroundColor: 'rgba(34, 197, 94, 0.7)',
-              borderColor: 'rgb(34, 197, 94)',
-              borderWidth: 1,
-            },
-          ],
-        });
-      } else {
-        setStats(defaultStats);
+      const response = await apiService.getOverviewStats();
+      const statsData = response.data as unknown as StatsData;
+      if (statsData && typeof statsData === 'object') {
+        setStats(statsData as StatsData);
       }
-
-      if (bookingsResponse.success && bookingsResponse.data) {
-        const bookingsData = bookingsResponse.data as any;
-        const bookings = bookingsData.data || bookingsData;
-        console.log('Bookings data:', bookings);
-        setRecentBookings(Array.isArray(bookings) ? bookings.slice(0, 4) : []);
-      } else if (overviewResponse.success && overviewResponse.data) {
-        const data = overviewResponse.data as any;
-        setRecentBookings(Array.isArray(data.recentBookings) ? data.recentBookings.slice(0, 4) : []);
-      } else {
-        setRecentBookings([]);
-      }
-    } catch (err) {
-      let errorMsg = 'Failed to load dashboard data';
-      
-      if (err instanceof Error) {
-        errorMsg = err.message;
-      } else if (typeof err === 'object' && err !== null && 'message' in err) {
-        errorMsg = (err as any).message;
-      } else if (typeof err === 'object' && err !== null && 'error' in err) {
-        errorMsg = (err as any).error;
-      }
-      
-      console.error('Error fetching dashboard data:', err);
-      setError(errorMsg);
-      setStats(defaultStats);
-      setRecentBookings([]);
-
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const sampleBookings = Array(12).fill(0).map(() => Math.floor(Math.random() * 30));
-      const sampleRevenue = sampleBookings.map(b => Math.floor(b * 50 + Math.random() * 1000));
-
-      setBookingTrendsData({
-        labels: months,
-        datasets: [
-          {
-            label: 'Bookings',
-            data: sampleBookings,
-            borderColor: 'rgb(59, 130, 246)',
-            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-            borderWidth: 2,
-            fill: true,
-            tension: 0.4,
-          },
-        ],
-      });
-
-      setRevenueData({
-        labels: months,
-        datasets: [
-          {
-            label: 'Revenue ($)',
-            data: sampleRevenue,
-            backgroundColor: 'rgba(34, 197, 94, 0.7)',
-            borderColor: 'rgb(34, 197, 94)',
-            borderWidth: 1,
-          },
-        ],
-      });
+      await fetchRecentBookings();
+    } catch (error) {
+      console.error('Error fetching stats:', error instanceof Error ? error.message : String(error));
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
+  const fetchRecentBookings = async () => {
+    try {
+      const response = await apiService.getBookings(1, 5);
+      const bookingsData = response.data as unknown as RecentBooking[];
+      setRecentBookings(Array.isArray(bookingsData) ? bookingsData.slice(0, 5) : []);
+    } catch (error) {
+      console.error('Error fetching bookings:', error instanceof Error ? error.message : String(error));
+    }
+  };
+
+  useEffect(() => {
+    void fetchStats();
+    setLoading(false);
+    
+    // Set current date
+    const now = new Date();
+    const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const dateString = now.toLocaleDateString('en-US', options);
+    const dateElement = document.getElementById('currentDate');
+    if (dateElement) {
+      dateElement.textContent = dateString;
+    }
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="text-gray-600 mt-4">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+      <div className="flex justify-between items-start gap-4 flex-wrap">
         <div>
           <h1 className="text-3xl font-bold gradient-primary-text">Dashboard Overview</h1>
-          <p className="text-gray-600">Welcome back! Here's what's happening with your hotels.</p>
-        </div>
-      </div>
-
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg animate-shake">
-          {error}
-        </div>
-      )}
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.length > 0 ? (
-          stats.map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <div
-                key={stat.label}
-                className={`bg-white rounded-xl shadow-lg p-6 flex flex-col items-start justify-between group hover:scale-[1.03] transition-transform duration-200 animate-fade-in`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`p-3 rounded-lg ${stat.color} shadow-md flex items-center justify-center`}>
-                    <Icon className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-gray-600 text-sm font-medium">{stat.label}</p>
-                    <p className="text-3xl font-bold mt-2 gradient-primary-text">{stat.value}</p>
-                  </div>
-                </div>
-              </div>
-            );
-          })
-        ) : (
-          <div className="col-span-full text-center py-8">
-            <p className="text-gray-500">No statistics available</p>
+          <p className="text-gray-600 mt-1">Welcome back! Here's what's happening with StayEase today.</p>
+          <div className="text-gray-600 text-sm mt-2">
+            <span id="currentDate"></span>
           </div>
-        )}
+        </div>
+        <button
+          onClick={fetchStats}
+          disabled={isRefreshing}
+          className="bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white px-6 py-2 rounded-lg font-semibold transition hover:shadow-lg disabled:opacity-70 flex items-center gap-2"
+        >
+          <RotateCcw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+          Refresh Data
+        </button>
       </div>
 
-      {/* Charts Placeholder */}
+      {/* Stats Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Users */}
+        <div className="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-gray-600 text-sm font-medium">Total Users</p>
+              <p className="text-3xl font-bold text-gray-900 mt-2">{stats?.users || 0}</p>
+              <p className="text-xs text-gray-500 mt-2">Active members</p>
+            </div>
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center">
+              <Users className="w-6 h-6 text-white" />
+            </div>
+          </div>
+        </div>
+
+        {/* Total Hotels */}
+        <div className="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-gray-600 text-sm font-medium">Total Hotels</p>
+              <p className="text-3xl font-bold text-gray-900 mt-2">{stats?.hotels || 0}</p>
+              <p className="text-xs text-gray-500 mt-2">Listed properties</p>
+            </div>
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#10b981] to-[#059669] flex items-center justify-center">
+              <Building2 className="w-6 h-6 text-white" />
+            </div>
+          </div>
+        </div>
+
+        {/* Total Bookings */}
+        <div className="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-gray-600 text-sm font-medium">Total Bookings</p>
+              <p className="text-3xl font-bold text-gray-900 mt-2">{stats?.bookings || 0}</p>
+              <p className="text-xs text-gray-500 mt-2">Pending: <strong>{stats?.bookings_pending || 0}</strong></p>
+            </div>
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#f59e0b] to-[#d97706] flex items-center justify-center">
+              <Calendar className="w-6 h-6 text-white" />
+            </div>
+          </div>
+        </div>
+
+        {/* User Roles */}
+        <div className="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-gray-600 text-sm font-medium">User Roles</p>
+              <p className="text-3xl font-bold text-gray-900 mt-2">{stats?.roles || 0}</p>
+              <p className="text-xs text-gray-500 mt-2">Access levels</p>
+            </div>
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#8b5cf6] to-[#7c3aed] flex items-center justify-center">
+              <Shield className="w-6 h-6 text-white" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h3 className="text-lg font-bold mb-4 gradient-primary-text">Booking Trends</h3>
-          {bookingTrendsData ? (
-            <div className="h-80">
-              <Line
-                data={bookingTrendsData}
+        {/* Booking Status Distribution */}
+        <div className="bg-white rounded-xl shadow p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold gradient-primary-text">Booking Status Distribution</h3>
+            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Live</span>
+          </div>
+          <div className="flex items-center justify-center h-80">
+            {stats?.booking_status ? (
+              <Doughnut
+                data={{
+                  labels: ['Pending', 'Confirmed', 'Completed', 'Cancelled'],
+                  datasets: [{
+                    data: [
+                      stats.booking_status.pending,
+                      stats.booking_status.confirmed,
+                      stats.booking_status.completed,
+                      stats.booking_status.cancelled
+                    ],
+                    backgroundColor: [
+                      'rgba(245, 158, 11, 0.8)',
+                      'rgba(16, 185, 129, 0.8)',
+                      'rgba(102, 126, 234, 0.8)',
+                      'rgba(239, 68, 68, 0.8)'
+                    ],
+                    borderColor: [
+                      'rgba(245, 158, 11, 1)',
+                      'rgba(16, 185, 129, 1)',
+                      'rgba(102, 126, 234, 1)',
+                      'rgba(239, 68, 68, 1)'
+                    ],
+                    borderWidth: 2,
+                  }]
+                }}
                 options={{
                   responsive: true,
                   maintainAspectRatio: false,
                   plugins: {
                     legend: {
-                      position: 'top' as const,
-                    },
-                  },
-                  scales: {
-                    y: {
-                      beginAtZero: true,
-                    },
-                  },
-                }}
+                      position: 'bottom',
+                    }
+                  }
+                } as unknown as Record<string, unknown>}
               />
-            </div>
-          ) : (
-            <div className="h-80 flex items-center justify-center bg-gray-100 rounded">
+            ) : (
               <p className="text-gray-500">Loading chart...</p>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h3 className="text-lg font-bold mb-4 gradient-primary-text">Revenue Overview</h3>
-          {revenueData ? (
-            <div className="h-80">
+
+        {/* Monthly Bookings Trend */}
+        <div className="bg-white rounded-xl shadow p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold gradient-primary-text">Monthly Bookings Trend</h3>
+            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Live</span>
+          </div>
+          <div className="flex items-center justify-center h-80">
+            {stats?.monthly_bookings ? (
               <Bar
-                data={revenueData}
+                data={{
+                  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                  datasets: [{
+                    label: 'Bookings',
+                    data: stats.monthly_bookings,
+                    backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                    borderColor: 'rgba(102, 126, 234, 1)',
+                    borderWidth: 2,
+                  }]
+                }}
                 options={{
                   responsive: true,
                   maintainAspectRatio: false,
                   plugins: {
                     legend: {
-                      position: 'top' as const,
-                    },
+                      display: false,
+                    }
                   },
                   scales: {
                     y: {
                       beginAtZero: true,
-                    },
-                  },
-                }}
+                    }
+                  }
+                } as unknown as Record<string, unknown>}
               />
-            </div>
-          ) : (
-            <div className="h-80 flex items-center justify-center bg-gray-100 rounded">
+            ) : (
               <p className="text-gray-500">Loading chart...</p>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Recent Bookings Table */}
-      <div className="bg-white rounded-xl shadow-lg">
-        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-          <h2 className="text-xl font-bold gradient-primary-text">Recent Bookings</h2>
-        </div>
-        <div className="overflow-x-auto">
-          {recentBookings.length > 0 ? (
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-3 text-left text-sm font-semibold">Guest</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold">Hotel</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold">Check-in</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {recentBookings.map((booking) => {
-                  const userName = booking.user_name || booking.user?.name || 'N/A';
-                  const hotelName = booking.hotel_name || booking.product_name || booking.hotel?.name || booking.product?.name || 'N/A';
-                  const checkInDate = booking.check_in || booking.check_in_date || 'N/A';
-                  
-                  return (
-                    <tr key={booking.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 flex items-center gap-3">
-                        <img src={noImage} alt="Guest" className="w-8 h-8 rounded-full object-cover border border-gray-200" />
-                        <span className="font-medium text-gray-900">{userName}</span>
-                      </td>
-                      <td className="px-6 py-4 font-medium text-gray-700">{hotelName}</td>
-                      <td className="px-6 py-4 text-gray-600">{checkInDate}</td>
-                      <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                          booking.status === 'Confirmed'
-                            ? 'bg-green-100 text-green-800'
-                            : booking.status === 'Pending'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {booking.status || 'N/A'}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          ) : (
-            <div className="p-8 text-center">
-              <img src={noImage} alt="No bookings" className="w-16 h-16 mx-auto mb-4 opacity-60" />
-              <p className="text-gray-500">No recent bookings</p>
+      {/* Recent Bookings & Quick Actions */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Recent Bookings */}
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-xl shadow">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+              <h3 className="text-lg font-bold gradient-primary-text">Recent Bookings</h3>
             </div>
-          )}
+            <div className="divide-y">
+              {recentBookings.length > 0 ? (
+                recentBookings.map((booking) => (
+                  <div key={booking.id} className="p-4 hover:bg-gray-50 transition">
+                    <div className="font-semibold text-gray-900">{booking.user_name}</div>
+                    <div className="text-sm text-gray-600 mt-2">
+                      <span className="inline-flex items-center gap-1 mr-4">
+                        {booking.hotel_name}
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        {booking.check_in} → {booking.check_out}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-8 text-center text-gray-500">
+                  No bookings available
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Actions & System Status */}
+        <div className="space-y-6">
+          {/* Quick Actions */}
+          <div className="bg-white rounded-xl shadow">
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-lg font-bold gradient-primary-text">Quick Actions</h3>
+            </div>
+            <div className="p-4 space-y-2">
+              <a href="/bookings/create" className="block w-full p-3 rounded-lg bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white text-center font-semibold hover:shadow-lg transition">
+                New Booking
+              </a>
+              <a href="/users/create" className="block w-full p-3 rounded-lg bg-gradient-to-r from-[#10b981] to-[#059669] text-white text-center font-semibold hover:shadow-lg transition">
+                Add Guest
+              </a>
+              <button className="w-full p-3 rounded-lg bg-gradient-to-r from-[#f59e0b] to-[#d97706] text-white font-semibold hover:shadow-lg transition">
+                Export Report
+              </button>
+              <button className="w-full p-3 rounded-lg bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] text-white font-semibold hover:shadow-lg transition">
+                Settings
+              </button>
+            </div>
+          </div>
+
+          {/* System Status */}
+          <div className="bg-white rounded-xl shadow">
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-lg font-bold gradient-primary-text">System Status</h3>
+            </div>
+            <div className="p-4 space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Server Status</span>
+                <span className="text-xs bg-green-100 text-green-800 px-3 py-1 rounded-full font-semibold">Online</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Database</span>
+                <span className="text-xs bg-green-100 text-green-800 px-3 py-1 rounded-full font-semibold">Connected</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Last Backup</span>
+                <span className="text-sm text-gray-600">2 hours ago</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-
     </div>
   );
 }

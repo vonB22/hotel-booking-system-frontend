@@ -9,7 +9,7 @@ interface Role {
   id: number;
   name: string;
   description?: string;
-  permissions?: Record<string, Record<string, boolean>>;
+  permissions?: string[] | Record<string, Record<string, boolean>>;
   usersCount?: number;
 }
 
@@ -62,7 +62,8 @@ export default function Show() {
     );
   }
 
-  const permissionsData = role.permissions || {};
+  const permissionsData = role.permissions || [];
+  const isPermissionsArray = Array.isArray(permissionsData);
 
   return (
     <div className="space-y-6">
@@ -97,24 +98,41 @@ export default function Show() {
 
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-lg mb-4 border-b pb-2">Permissions</h3>
-            {Object.keys(permissionsData).length > 0 ? (
-              <div className="space-y-4">
-                {Object.entries(permissionsData).map(([module, perms]) => (
-                  <div key={module}>
-                    <h4 className="capitalize mb-2 font-semibold">{module}</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {Object.entries(perms).map(([action, granted]) => (
-                        <div key={action} className="flex items-center gap-2">
-                          <Check className={`w-4 h-4 ${granted ? 'text-green-600' : 'text-gray-300'}`} />
-                          <span className="text-sm capitalize">{action}</span>
-                        </div>
-                      ))}
+            {isPermissionsArray ? (
+              // Handle array format
+              (permissionsData as string[]).length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {(permissionsData as string[]).map(permission => (
+                    <div key={permission} className="flex items-center gap-2 p-3 rounded-lg bg-gray-50 border border-gray-200">
+                      <Check className="w-4 h-4 text-green-600" />
+                      <span className="text-sm font-medium capitalize">{permission}</span>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500">No permissions defined</p>
+              )
             ) : (
-              <p className="text-gray-500">No permissions defined</p>
+              // Handle object format (nested structure)
+              Object.keys(permissionsData as Record<string, Record<string, boolean>>).length > 0 ? (
+                <div className="space-y-4">
+                  {Object.entries(permissionsData as Record<string, Record<string, boolean>>).map(([module, perms]) => (
+                    <div key={module}>
+                      <h4 className="capitalize mb-2 font-semibold">{module}</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {Object.entries(perms).map(([action, granted]) => (
+                          <div key={action} className="flex items-center gap-2">
+                            <Check className={`w-4 h-4 ${granted ? 'text-green-600' : 'text-gray-300'}`} />
+                            <span className="text-sm capitalize">{action}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500">No permissions defined</p>
+              )
             )}
           </div>
         </div>

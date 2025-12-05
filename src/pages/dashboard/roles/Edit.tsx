@@ -3,7 +3,7 @@ import { NavigationContext } from '../../../App';
 import { useNavigate, useParams } from 'react-router-dom';
 import FormInput from '../../../Components/FormInput';
 import Button from '../../../Components/Button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Check } from 'lucide-react';
 import apiService from '../../../services/api';
 
 interface Role {
@@ -11,6 +11,15 @@ interface Role {
   name: string;
   permissions: string[];
 }
+
+const AVAILABLE_PERMISSIONS = [
+  'create',
+  'read',
+  'update',
+  'delete',
+  'export',
+  'import'
+];
 
 export default function Edit() {
   const { currentItemId } = useContext(NavigationContext);
@@ -44,7 +53,7 @@ export default function Edit() {
         setFormData({
           id: roleData.id || 0,
           name: roleData.name || '',
-          permissions: roleData.permissions || [],
+          permissions: Array.isArray(roleData.permissions) ? roleData.permissions : [],
         });
       } else {
         setError(response.message || 'Failed to fetch role');
@@ -55,6 +64,15 @@ export default function Edit() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const togglePermission = (permission: string) => {
+    setFormData(prev => ({
+      ...prev,
+      permissions: prev.permissions.includes(permission)
+        ? prev.permissions.filter(p => p !== permission)
+        : [...prev.permissions, permission]
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -89,11 +107,19 @@ export default function Edit() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-lg shadow p-6 text-center">
+        <p className="text-gray-600">Loading role details...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <button onClick={() => navigate('/roles')} className="p-2 hover:bg-gray-100 rounded-lg" title="Back to roles" aria-label="Back to roles"><ArrowLeft className="w-5 h-5" /></button>
-        <div><h1 className="text-3xl">Edit Role #{id}</h1><p className="text-gray-600">Update role details</p></div>
+        <div><h1 className="text-3xl">Edit Role #{id}</h1><p className="text-gray-600">Update role details and permissions</p></div>
       </div>
 
       {error && (
@@ -102,66 +128,52 @@ export default function Edit() {
         </div>
       )}
 
-      {isLoading && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-center text-gray-600">Loading role details...</p>
-        </div>
-      )}
-
-      {!isLoading && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <h3 className="text-lg mb-4 border-b pb-2">Role Information</h3>
-              <div className="space-y-4">
-                <div>
-                  <FormInput label="Role Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required disabled={isSubmitting} />
-                  {errors.name && <p className="text-red-600 text-sm mt-1">{errors.name[0]}</p>}
-                </div>
+      <div className="bg-white rounded-lg shadow p-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <h3 className="text-lg mb-4 border-b pb-2">Role Information</h3>
+            <div className="space-y-4">
+              <div>
+                <FormInput
+                  label="Role Name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
+                  disabled={isSubmitting}
+                />
+                {errors.name && <p className="text-red-600 text-sm mt-1">{errors.name[0]}</p>}
               </div>
             </div>
+          </div>
 
-            <div>
-              <h3 className="text-lg mb-4 border-b pb-2">Permissions</h3>
-              <div className="space-y-4">
-                {['Bookings', 'Hotels', 'Users', 'Roles'].map((module) => (
-                  <div key={module}>
-                    <h4 className="mb-2 font-medium">{module}</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {['view', 'create', 'edit', 'delete'].map((action) => {
-                        const permissionName = `${module.toLowerCase()}.${action}`;
-                        const isChecked = formData.permissions.includes(permissionName);
-                        return (
-                          <label key={action} className="flex items-center gap-2 cursor-pointer">
-                            <input 
-                              type="checkbox" 
-                              checked={isChecked}
-                              onChange={(e) => {
-                                const newPermissions = e.target.checked 
-                                  ? [...formData.permissions, permissionName]
-                                  : formData.permissions.filter(p => p !== permissionName);
-                                setFormData({ ...formData, permissions: newPermissions });
-                              }}
-                              className="rounded"
-                              disabled={isSubmitting}
-                            />
-                            <span className="text-sm capitalize">{action}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
+          <div>
+            <h3 className="text-lg mb-4 border-b pb-2">Permissions</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {AVAILABLE_PERMISSIONS.map(permission => (
+                <label key={permission} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 border border-gray-200">
+                  <input
+                    type="checkbox"
+                    checked={formData.permissions.includes(permission)}
+                    onChange={() => togglePermission(permission)}
+                    disabled={isSubmitting}
+                    className="w-4 h-4 rounded cursor-pointer"
+                  />
+                  <span className="capitalize text-sm font-medium">{permission}</span>
+                  {formData.permissions.includes(permission) && (
+                    <Check className="w-4 h-4 text-green-600 ml-auto" />
+                  )}
+                </label>
+              ))}
             </div>
+            {errors.permissions && <p className="text-red-600 text-sm mt-2">{errors.permissions[0]}</p>}
+          </div>
 
-            <div className="flex gap-4 justify-end pt-4 border-t">
-              <Button variant="outline" onClick={() => navigate('/roles')} type="button" disabled={isSubmitting}>Cancel</Button>
-              <Button variant="primary" type="submit" disabled={isSubmitting}>{isSubmitting ? 'Updating...' : 'Update Role'}</Button>
-            </div>
-          </form>
-        </div>
-      )}
+          <div className="flex gap-4 justify-end pt-4 border-t">
+            <Button variant="outline" onClick={() => navigate('/roles')} type="button" disabled={isSubmitting}>Cancel</Button>
+            <Button variant="primary" type="submit" disabled={isSubmitting}>{isSubmitting ? 'Updating...' : 'Update Role'}</Button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

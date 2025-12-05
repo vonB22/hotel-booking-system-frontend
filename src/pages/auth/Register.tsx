@@ -580,7 +580,7 @@ export default function Register() {
                 </div>
 
                 {/* Password Field */}
-                <div className="form-floating password-field relative">
+                <div className="form-floating password-field relative mb-4">
                   <input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
@@ -613,7 +613,7 @@ export default function Register() {
 
                 {/* Password Strength Indicator */}
                 {password && (
-                  <div className="ml-1 space-y-2 mb-4 mt-2">
+                  <div className="ml-1 space-y-2 mb-4 -mt-4">
                     <div className="flex items-center gap-2">
                       <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                         <div 
@@ -644,7 +644,7 @@ export default function Register() {
                 )}
 
                 {/* Confirm Password Field */}
-                <div className="form-floating relative">
+                <div className="form-floating password-field relative mb-2">
                   <input
                     id="confirm-password"
                     type={showConfirmPassword ? 'text' : 'password'}
@@ -665,7 +665,7 @@ export default function Register() {
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     disabled={isLoading}
                     className="password-toggle"
-                    aria-label="Toggle password visibility"
+                    aria-label="Toggle confirm password visibility"
                   >
                     {showConfirmPassword ? (
                       <EyeOff className="w-5 h-5" />
@@ -673,13 +673,24 @@ export default function Register() {
                       <Eye className="w-5 h-5" />
                     )}
                   </button>
-                  {password && passwordConfirmation && password !== passwordConfirmation && (
-                    <p className="mt-2 text-xs text-red-600 ml-1">Passwords do not match</p>
-                  )}
-                  {password && passwordConfirmation && password === passwordConfirmation && (
-                    <p className="mt-2 text-xs text-green-600 ml-1">Passwords match</p>
-                  )}
                 </div>
+
+                {/* Password Match Validation */}
+                {password && passwordConfirmation && (
+                  <div className="mb-4">
+                    {password === passwordConfirmation ? (
+                      <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-[#d1fae5] to-[#a7f3d0] rounded-lg border border-[#6ee7b7]">
+                        <CheckCircle className="w-5 h-5 text-[#065f46] flex-shrink-0" />
+                        <span className="text-sm text-[#065f46] font-medium">Passwords match</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-[#fee2e2] to-[#fecaca] rounded-lg border border-[#fca5a5]">
+                        <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+                        <span className="text-sm text-red-700 font-medium">Passwords do not match</span>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Terms and Conditions */}
                 <label className="flex items-center gap-2 cursor-pointer mb-6 mt-2">
