@@ -222,7 +222,7 @@ export default function LandingHome() {
     }
 
     // Calculate max guests based on rooms (assume 2 guests per room as standard)
-    const maxGuests = selectedHotel.rooms ? selectedHotel.rooms * 2 : 12;
+    const maxGuests = selectedHotel?.rooms ? selectedHotel.rooms * 2 : 12;
     
     // Validate guest count
     if (bookingForm.guests < 1) {
@@ -231,7 +231,7 @@ export default function LandingHome() {
     }
     
     if (bookingForm.guests > maxGuests) {
-      setBookingError(`Maximum ${maxGuests} guests allowed for this hotel (${selectedHotel.rooms} rooms × 2 guests/room)`);
+      setBookingError(`Maximum ${maxGuests} guests allowed for this hotel (${selectedHotel?.rooms || 'N/A'} rooms × 2 guests/room)`);
       return;
     }
     
