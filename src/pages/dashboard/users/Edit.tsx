@@ -37,6 +37,19 @@ export default function Edit() {
   const [error, setError] = useState('');
   const [errors, setErrors] = useState<Record<string, string[]>>({});
 
+  // Password validation
+  const passwordStrength = {
+    hasUppercase: /[A-Z]/.test(password),
+    hasLowercase: /[a-z]/.test(password),
+    hasNumber: /\d/.test(password),
+    hasSpecial: /[!@#$%^&*]/.test(password),
+    minLength: password.length >= 8
+  };
+
+  const strengthScore = Object.values(passwordStrength).filter(Boolean).length;
+  const passwordsMatch = password === passwordConfirm;
+  const isPasswordValid = password.length === 0 || (password.length >= 8 && strengthScore >= 3 && passwordsMatch);
+
   useEffect(() => {
     if (id) {
       fetchUser();
@@ -202,7 +215,13 @@ export default function Edit() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Leave blank to keep current password"
                     disabled={isSubmitting}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent disabled:bg-gray-50 ${
+                      password.length > 0 && password.length < 8
+                        ? 'border-red-300 focus:ring-red-500'
+                        : password.length > 0 && strengthScore >= 3
+                        ? 'border-green-300 focus:ring-green-500'
+                        : 'border-gray-300 focus:ring-blue-500'
+                    }`}
                   />
                   <button
                     type="button"
@@ -213,6 +232,67 @@ export default function Edit() {
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
+                
+                {/* Password Strength Indicator */}
+                {password.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full transition-all ${
+                            strengthScore <= 2 ? 'w-1/3 bg-red-500' :
+                            strengthScore <= 3 ? 'w-2/3 bg-yellow-500' :
+                            'w-full bg-green-500'
+                          }`}
+                        ></div>
+                      </div>
+                      <span className={`text-xs font-semibold ${
+                        strengthScore <= 2 ? 'text-red-600' :
+                        strengthScore <= 3 ? 'text-yellow-600' :
+                        'text-green-600'
+                      }`}>
+                        {strengthScore <= 2 ? 'Weak' : strengthScore <= 3 ? 'Medium' : 'Strong'}
+                      </span>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className={`flex items-center gap-1 ${passwordStrength.minLength ? 'text-green-600' : 'text-gray-500'}`}>
+                        <span className={`w-4 h-4 rounded-full flex items-center justify-center text-xs ${passwordStrength.minLength ? 'bg-green-100' : 'bg-gray-100'}`}>
+                          {passwordStrength.minLength ? '✓' : '✗'}
+                        </span>
+                        At least 8 characters
+                      </div>
+                      <div className={`flex items-center gap-1 ${passwordStrength.hasUppercase ? 'text-green-600' : 'text-gray-500'}`}>
+                        <span className={`w-4 h-4 rounded-full flex items-center justify-center text-xs ${passwordStrength.hasUppercase ? 'bg-green-100' : 'bg-gray-100'}`}>
+                          {passwordStrength.hasUppercase ? '✓' : '✗'}
+                        </span>
+                        Uppercase letter
+                      </div>
+                      <div className={`flex items-center gap-1 ${passwordStrength.hasLowercase ? 'text-green-600' : 'text-gray-500'}`}>
+                        <span className={`w-4 h-4 rounded-full flex items-center justify-center text-xs ${passwordStrength.hasLowercase ? 'bg-green-100' : 'bg-gray-100'}`}>
+                          {passwordStrength.hasLowercase ? '✓' : '✗'}
+                        </span>
+                        Lowercase letter
+                      </div>
+                      <div className={`flex items-center gap-1 ${passwordStrength.hasNumber ? 'text-green-600' : 'text-gray-500'}`}>
+                        <span className={`w-4 h-4 rounded-full flex items-center justify-center text-xs ${passwordStrength.hasNumber ? 'bg-green-100' : 'bg-gray-100'}`}>
+                          {passwordStrength.hasNumber ? '✓' : '✗'}
+                        </span>
+                        Number
+                      </div>
+                      <div className={`flex items-center gap-1 ${passwordStrength.hasSpecial ? 'text-green-600' : 'text-gray-500'}`}>
+                        <span className={`w-4 h-4 rounded-full flex items-center justify-center text-xs ${passwordStrength.hasSpecial ? 'bg-green-100' : 'bg-gray-100'}`}>
+                          {passwordStrength.hasSpecial ? '✓' : '✗'}
+                        </span>
+                        Special character (!@#$%^&*)
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {password.length > 0 && password.length < 8 && (
+                  <p className="text-red-600 text-sm mt-2 font-medium">Password must be at least 8 characters long</p>
+                )}
                 {errors.password && <p className="text-red-600 text-sm mt-1">{errors.password[0]}</p>}
               </div>
 
@@ -225,23 +305,33 @@ export default function Edit() {
                     value={passwordConfirm}
                     onChange={(e) => setPasswordConfirm(e.target.value)}
                     placeholder="Leave blank to keep current password"
-                    disabled={isSubmitting}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
+                    disabled={isSubmitting || password.length === 0}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent disabled:bg-gray-50 ${
+                      password.length > 0 && passwordConfirm && !passwordsMatch
+                        ? 'border-red-300 focus:ring-red-500'
+                        : password.length > 0 && passwordConfirm && passwordsMatch
+                        ? 'border-green-300 focus:ring-green-500'
+                        : 'border-gray-300 focus:ring-blue-500'
+                    }`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || password.length === 0}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 disabled:opacity-50"
                   >
                     {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
-                {password && passwordConfirm && password !== passwordConfirm && (
-                  <p className="text-red-600 text-sm mt-1">Passwords do not match</p>
+                
+                {password && passwordConfirm && !passwordsMatch && (
+                  <p className="text-red-600 text-sm mt-2 font-medium">Passwords do not match</p>
                 )}
-                {password && passwordConfirm && password === passwordConfirm && (
-                  <p className="text-green-600 text-sm mt-1">Passwords match</p>
+                {password && passwordConfirm && passwordsMatch && (
+                  <p className="text-green-600 text-sm mt-2 font-medium">✓ Passwords match</p>
+                )}
+                {password.length === 0 && (
+                  <p className="text-gray-500 text-sm mt-2">Enter a new password above to enable this field</p>
                 )}
                 {errors.password_confirmation && <p className="text-red-600 text-sm mt-1">{errors.password_confirmation[0]}</p>}
               </div>
@@ -249,7 +339,13 @@ export default function Edit() {
             
             <div className="flex gap-4 justify-end pt-4 border-t">
               <Button variant="outline" onClick={() => navigate('/users')} type="button" disabled={isSubmitting}>Cancel</Button>
-              <Button variant="primary" type="submit" disabled={isSubmitting}>{isSubmitting ? 'Updating...' : 'Update User'}</Button>
+              <Button 
+                variant="primary" 
+                type="submit" 
+                disabled={isSubmitting || !isPasswordValid}
+              >
+                {isSubmitting ? 'Updating...' : 'Update User'}
+              </Button>
             </div>
           </form>
         </div>

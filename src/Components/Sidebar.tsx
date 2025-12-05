@@ -9,7 +9,8 @@ import {
   Users,
   Shield,
   Settings,
-  LogOut
+  LogOut,
+  Hotel
 } from 'lucide-react';
 import authService from '../services/auth';
 
@@ -135,11 +136,12 @@ import authService from '../services/auth';
       >
         <div className="p-6 space-y-6">
           <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
-            <img
-              src={Image}
-              alt="Admin avatar"
-              className="w-10 h-10 rounded-full object-cover border border-gray-300 shadow-sm bg-gray-100"
-            />
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl blur opacity-50"></div>
+              <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-lg">
+                <Hotel className="w-6 h-6" />
+              </div>
+            </div>
             <div>
               <p className="text-sm font-bold text-gray-900">StayEase</p>
               <p className="text-xs text-gray-500">Admin Dashboard</p>

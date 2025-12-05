@@ -10,28 +10,40 @@ export default function Show() {
   const navigate = useNavigate();
   const params = useParams();
   const [user, setUser] = useState<any | null>(null);
+  const [userBookings, setUserBookings] = useState<any[]>([]);
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const id = params.id || currentItemId || null;
     if (!id) return;
-    const fetchUser = async () => {
+    const fetchUserData = async () => {
       try {
-        const response = await apiService.getUser(id);
-        if (response.success && response.data) {
-          setUser(response.data);
+        // Fetch user details
+        const userResponse = await apiService.getUser(id);
+        if (userResponse.success && userResponse.data) {
+          setUser(userResponse.data);
         } else {
           setUser(null);
         }
+
+        // Fetch all bookings and filter by user_id
+        const bookingsResponse = await apiService.getBookings(1, 1000);
+        if (bookingsResponse.success && Array.isArray(bookingsResponse.data)) {
+          const userBookingsList = bookingsResponse.data.filter((b: any) => b.user_id === Number(id));
+          setUserBookings(userBookingsList);
+        } else {
+          setUserBookings([]);
+        }
       } catch (err) {
-        console.error('Failed to fetch user:', err);
+        console.error('Failed to fetch user data:', err);
         setUser(null);
+        setUserBookings([]);
       }
     };
-    fetchUser();
+    fetchUserData();
   }, [params.id]);
 
-  if (!user) return (<div>Loading user...</div>);
+  if (!user) return (<div className="text-center py-8 text-red-600">User not found or failed to load</div>);
 
   return (
     <div className="space-y-6">
@@ -75,9 +87,8 @@ export default function Show() {
                   />
                   <button
                     onClick={() => setShowPassword(!showPassword)}
-                    className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-gray-900 transition-colors"
                     title={showPassword ? 'Hide password' : 'Show password'}
-                    disabled={!user.password || !user.password.trim()}
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -90,9 +101,63 @@ export default function Show() {
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-lg mb-4 border-b pb-2">Activity Statistics</h3>
             <div className="grid grid-cols-2 gap-4">
-              <div><p className="text-sm text-gray-600">Total Bookings</p><p className="text-2xl">{user.bookingsCount || 0}</p></div>
-              <div><p className="text-sm text-gray-600">Total Spent</p><p className="text-2xl">${user.totalSpent || 0}</p></div>
+              <div>
+                <p className="text-sm text-gray-600">Total Bookings</p>
+                <p className="text-2xl font-bold">{userBookings.length}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Total Spent</p>
+                <p className="text-2xl font-bold">${userBookings.reduce((sum: number, b: any) => sum + (Number(b.total_price) || 0), 0).toFixed(2)}</p>
+              </div>
             </div>
+          </div>
+
+          {/* User Bookings */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg mb-4 border-b pb-2">Recent Bookings</h3>
+            {userBookings.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-4 py-2 text-left">Booking ID</th>
+                      <th className="px-4 py-2 text-left">Hotel</th>
+                      <th className="px-4 py-2 text-left">Check-in</th>
+                      <th className="px-4 py-2 text-left">Check-out</th>
+                      <th className="px-4 py-2 text-left">Guests</th>
+                      <th className="px-4 py-2 text-left">Amount</th>
+                      <th className="px-4 py-2 text-left">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {userBookings.slice(0, 5).map((booking: any) => (
+                      <tr key={booking.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-2 font-medium">#{booking.id}</td>
+                        <td className="px-4 py-2">{booking.hotel?.name || 'N/A'}</td>
+                        <td className="px-4 py-2">{new Date(booking.check_in).toLocaleDateString()}</td>
+                        <td className="px-4 py-2">{new Date(booking.check_out).toLocaleDateString()}</td>
+                        <td className="px-4 py-2 text-center">{booking.guests}</td>
+                        <td className="px-4 py-2 font-semibold">${Number(booking.total_price || 0).toFixed(2)}</td>
+                        <td className="px-4 py-2">
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${
+                            booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                            booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {booking.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {userBookings.length > 5 && (
+                  <p className="text-sm text-gray-500 mt-2">Showing 5 of {userBookings.length} bookings</p>
+                )}
+              </div>
+            ) : (
+              <p className="text-gray-600">No bookings yet</p>
+            )}
           </div>
         </div>
 

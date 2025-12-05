@@ -15,6 +15,16 @@ interface Booking {
   total_price: number;
   status: string;
   notes: string;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+  };
+  hotel?: {
+    id: number;
+    name: string;
+    location?: string;
+  };
 }
 
 export default function Index() {
@@ -164,25 +174,44 @@ export default function Index() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-3 text-left text-sm">ID</th>
-                  <th className="px-6 py-3 text-left text-sm">Check-in</th>
-                  <th className="px-6 py-3 text-left text-sm">Check-out</th>
-                  <th className="px-6 py-3 text-left text-sm">Guests</th>
-                  <th className="px-6 py-3 text-left text-sm">Price</th>
-                  <th className="px-6 py-3 text-left text-sm">Status</th>
-                  <th className="px-6 py-3 text-left text-sm">Actions</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">ID</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Guest</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Hotel</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Dates</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Guests</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Price</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {filteredBookings.map((booking) => (
-                  <tr key={booking.id} className="skeleton-table-row">
-                    <td className="px-6 py-4">#{booking.id}</td>
-                    <td className="px-6 py-4">{booking.check_in}</td>
-                    <td className="px-6 py-4">{booking.check_out}</td>
-                    <td className="px-6 py-4">{booking.guests}</td>
-                    <td className="px-6 py-4">${booking.total_price}</td>
+                  <tr key={booking.id} className="skeleton-table-row hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 text-sm font-medium">#{booking.id}</td>
                     <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-sm ${
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium text-gray-900">{booking.user?.name || 'Unknown'}</span>
+                        <span className="text-xs text-gray-500">{booking.user?.email || '-'}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium text-gray-900">{booking.hotel?.name || '-'}</span>
+                        <span className="text-xs text-gray-500">{booking.hotel?.location || ''}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col text-sm">
+                        <span className="text-gray-900">{new Date(booking.check_in).toLocaleDateString()}</span>
+                        <span className="text-gray-500">to {new Date(booking.check_out).toLocaleDateString()}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-center">
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded">{booking.guests}</span>
+                    </td>
+                    <td className="px-6 py-4 text-sm font-semibold text-gray-900">${booking.total_price.toFixed(2)}</td>
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                         booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
                         booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                         'bg-red-100 text-red-800'
@@ -194,21 +223,21 @@ export default function Index() {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleShow(booking.id)}
-                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                          className="p-2 hover:bg-blue-50 rounded-lg transition-colors"
                           title="View booking"
                         >
                           <Eye className="w-4 h-4 text-blue-600" />
                         </button>
                         <button
                           onClick={() => handleEdit(booking.id)}
-                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                          className="p-2 hover:bg-green-50 rounded-lg transition-colors"
                           title="Edit booking"
                         >
                           <Edit className="w-4 h-4 text-green-600" />
                         </button>
                         <button
                           onClick={() => handleDelete(booking.id)}
-                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                          className="p-2 hover:bg-red-50 rounded-lg transition-colors"
                           title="Delete booking"
                         >
                           <Trash2 className="w-4 h-4 text-red-600" />
