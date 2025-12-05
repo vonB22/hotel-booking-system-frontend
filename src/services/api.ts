@@ -175,8 +175,8 @@ class ApiService {
 
   // ==================== HOTELS ====================
 
-  async getHotels(): Promise<ApiResponse> {
-    return this.request('/hotels', {
+  async getHotels(page: number = 1, limit: number = 10): Promise<ApiResponse> {
+    return this.request(`/hotels?page=${page}&per_page=${limit}`, {
       method: 'GET',
     });
   }
@@ -208,6 +208,19 @@ class ApiService {
     return this.request(`/hotels/${id}`, {
       method: 'DELETE',
     });
+  }
+
+  async searchHotels(
+    searchTerm: string,
+    page: number = 1,
+    limit: number = 10
+  ): Promise<ApiResponse> {
+    return this.request(
+      `/hotels/search?q=${encodeURIComponent(searchTerm)}&page=${page}&limit=${limit}`,
+      {
+        method: 'GET',
+      }
+    );
   }
 
   // ==================== BOOKINGS ====================
