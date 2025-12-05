@@ -209,7 +209,7 @@ export default function Index() {
                     <td className="px-6 py-4 text-sm text-center">
                       <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded">{booking.guests}</span>
                     </td>
-                    <td className="px-6 py-4 text-sm font-semibold text-gray-900">${booking.total_price.toFixed(2)}</td>
+                    <td className="px-6 py-4 text-sm font-semibold text-gray-900">${Number(booking.total_price || 0).toFixed(2)}</td>
                     <td className="px-6 py-4">
                       <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                         booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
