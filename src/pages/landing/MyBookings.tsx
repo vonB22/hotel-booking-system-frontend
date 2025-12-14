@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Calendar, Users, MapPin, DollarSign, Clock, AlertCircle, CheckCircle, XCircle, ArrowLeft, Hotel, Moon } from 'lucide-react';
+import { Calendar, Users, MapPin, DollarSign, Clock, AlertCircle, CheckCircle, XCircle, ArrowLeft, Hotel, Moon, Trash2 } from 'lucide-react';
 import Navbar from '../../Components/Navbar';
 import apiService from '../../services/api';
 
@@ -27,6 +27,9 @@ export default function MyBookings() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isVisible, setIsVisible] = useState(false);
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [cancelingBookingId, setCancelingBookingId] = useState<number | null>(null);
+  const [isCanceling, setIsCanceling] = useState(false);
 
   useEffect(() => {
     fetchBookings();
@@ -94,6 +97,30 @@ export default function MyBookings() {
     const end = new Date(checkOut);
     const diffTime = Math.abs(end.getTime() - start.getTime());
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
+
+  const handleCancelBooking = async (bookingId: number) => {
+    setIsCanceling(true);
+    try {
+      const response = await apiService.cancelBooking(bookingId);
+      if (response.success) {
+        setBookings(bookings.map(b => 
+          b.id === bookingId ? { ...b, status: 'cancelled' } : b
+        ));
+        if (booking?.id === bookingId) {
+          setBooking({ ...booking, status: 'cancelled' });
+        }
+        setCancelModalOpen(false);
+        setCancelingBookingId(null);
+      } else {
+        setError(response.message || 'Failed to cancel booking');
+      }
+    } catch (err: any) {
+      console.error('Cancel error:', err);
+      setError(err.message || 'Failed to cancel booking');
+    } finally {
+      setIsCanceling(false);
+    }
   };
 
   if (loading) {
@@ -310,6 +337,18 @@ export default function MyBookings() {
                     <ArrowLeft className="w-5 h-5" />
                     Back to Bookings
                   </button>
+                  {booking.status.toLowerCase() !== 'cancelled' && (
+                    <button
+                      onClick={() => {
+                        setCancelingBookingId(booking.id);
+                        setCancelModalOpen(true);
+                      }}
+                      className="flex items-center gap-2 px-6 py-3 bg-red-100 text-red-700 hover:bg-red-200 rounded-xl transition-all font-semibold active:scale-95"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                      Cancel Booking
+                    </button>
+                  )}
                   <button
                     onClick={() => navigate('/user-dashboard')}
                     className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all font-semibold shadow-md hover:shadow-lg active:scale-95"
@@ -426,6 +465,46 @@ export default function MyBookings() {
             </div>
           )}
         </div>
+
+        {/* Cancel Confirmation Modal */}
+        {cancelModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 animate-scale-in">
+              <div className="border-b border-gray-200 px-6 py-4 bg-gradient-to-r from-red-50 to-pink-50">
+                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <Trash2 className="w-5 h-5 text-red-600" />
+                  Cancel Booking
+                </h2>
+              </div>
+              <div className="px-6 py-4">
+                <p className="text-gray-700 mb-2">Are you sure you want to cancel this booking?</p>
+                <p className="text-sm text-gray-600">
+                  This action cannot be undone. The booking will be marked as cancelled.
+                </p>
+              </div>
+              <div className="border-t border-gray-200 px-6 py-4 flex gap-3 justify-end">
+                <button
+                  onClick={() => {
+                    setCancelModalOpen(false);
+                    setCancelingBookingId(null);
+                  }}
+                  disabled={isCanceling}
+                  className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Keep Booking
+                </button>
+                <button
+                  onClick={() => cancelingBookingId && handleCancelBooking(cancelingBookingId)}
+                  disabled={isCanceling}
+                  className="px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  {isCanceling ? 'Canceling...' : 'Yes, Cancel'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
