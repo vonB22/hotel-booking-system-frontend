@@ -190,7 +190,6 @@ export default function Edit() {
 
   const clearCustomImage = () => {
     setCustomImagePreview(null);
-    setCustomImageFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
