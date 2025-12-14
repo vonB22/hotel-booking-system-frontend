@@ -16,6 +16,7 @@ interface Booking {
     id: number;
     name: string;
     location?: string;
+    price?: number;
   };
 }
 
@@ -97,6 +98,12 @@ export default function MyBookings() {
     const end = new Date(checkOut);
     const diffTime = Math.abs(end.getTime() - start.getTime());
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
+
+  const calculateTotalPrice = (checkIn: string, checkOut: string, pricePerNight: number | undefined) => {
+    if (!pricePerNight) return 0;
+    const nights = calculateNights(checkIn, checkOut);
+    return nights * pricePerNight;
   };
 
   const handleCancelBooking = async (bookingId: number) => {
@@ -305,7 +312,7 @@ export default function MyBookings() {
                   <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-6 border border-indigo-100">
                     <div className="flex justify-between items-center mb-4 pb-4 border-b border-indigo-200">
                       <p className="text-gray-700 font-medium">Price per night</p>
-                      <p className="font-semibold text-gray-900">Calculated</p>
+                      <p className="font-semibold text-gray-900">${booking.product?.price || 0}</p>
                     </div>
                     <div className="flex justify-between items-center mb-4 pb-4 border-b border-indigo-200">
                       <p className="text-gray-700 font-medium">Number of nights</p>
@@ -314,7 +321,7 @@ export default function MyBookings() {
                     <div className="flex justify-between items-center pt-2">
                       <p className="text-xl font-bold text-gray-900">Total Price</p>
                       <p className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                        ${booking.total_price || 'N/A'}
+                        ${calculateTotalPrice(booking.check_in, booking.check_out, booking.product?.price)}
                       </p>
                     </div>
                   </div>
