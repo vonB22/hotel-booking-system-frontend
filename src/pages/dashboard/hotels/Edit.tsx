@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext, useEffect, useRef } from 'react';
 import { NavigationContext } from '../../../App';
 import { useNavigate, useParams } from 'react-router-dom';
 import FormInput from '../../../Components/FormInput';
@@ -29,6 +29,8 @@ export default function Edit() {
   const navigate = useNavigate();
   const params = useParams();
   const id = params.id || currentItemId;
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const dragOverRef = useRef(false);
   const [formData, setFormData] = useState<Hotel>({
     id: 0,
     name: '',
@@ -44,6 +46,7 @@ export default function Edit() {
   const [error, setError] = useState('');
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [customImagePreview, setCustomImagePreview] = useState<string | null>(null);
+  const [customImageFile, setCustomImageFile] = useState<File | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   useEffect(() => {
@@ -82,15 +85,21 @@ export default function Edit() {
         .map(a => a.trim())
         .filter(a => a.length > 0);
 
-      const response = await apiService.updateHotel(id!, {
-        name: formData.name,
-        detail: formData.detail,
-        location: formData.location,
-        price: formData.price,
-        rooms: formData.rooms,
-        rating: formData.rating,
-        amenities: amenitiesList,
-      });
+      const formDataToSend = new FormData();
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('detail', formData.detail);
+      formDataToSend.append('location', formData.location);
+      formDataToSend.append('price', String(formData.price));
+      formDataToSend.append('rooms', String(formData.rooms));
+      formDataToSend.append('rating', String(formData.rating));
+      formDataToSend.append('amenities', JSON.stringify(amenitiesList));
+
+      // If custom image was uploaded, append it
+      if (customImageFile) {
+        formDataToSend.append('image', customImageFile);
+      }
+
+      const response = await apiService.updateHotel(id!, formDataToSend as any);
 
       console.log('Update response:', response);
 
@@ -133,29 +142,61 @@ export default function Edit() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        setError('Please select an image file');
-        return;
-      }
-      
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setError('Image size must be less than 5MB');
-        return;
-      }
-      
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setCustomImagePreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-      setError('');
+      processImageFile(file);
+    }
+  };
+
+  const processImageFile = (file: File) => {
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file');
+      return;
+    }
+    
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image size must be less than 5MB');
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setCustomImagePreview(e.target?.result as string);
+      setCustomImageFile(file);
+    };
+    reader.readAsDataURL(file);
+    setError('');
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragOverRef.current = true;
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragOverRef.current = false;
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragOverRef.current = false;
+    
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      processImageFile(file);
     }
   };
 
   const clearCustomImage = () => {
     setCustomImagePreview(null);
+    setCustomImageFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -326,28 +367,50 @@ export default function Edit() {
                 />
               </div>
 
-              {/* Upload Custom Image */}
-              <div className="mb-6 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 transition-colors">
-                <label className="block">
-                  <div className="flex flex-col items-center gap-2 cursor-pointer">
-                    <Upload className="w-8 h-8 text-gray-400" />
-                    <span className="text-sm font-medium text-gray-700">Click to upload custom image</span>
-                    <span className="text-xs text-gray-500">or drag and drop (Max 5MB)</span>
-                  </div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
+              {/* Upload Custom Image with Drag and Drop */}
+              <div
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={`mb-6 p-4 border-2 border-dashed rounded-lg transition-colors ${
+                  dragOverRef.current
+                    ? 'border-indigo-500 bg-indigo-50'
+                    : 'border-gray-300 hover:border-indigo-500 bg-gray-50'
+                }`}
+              >
+                <div className="flex flex-col items-center gap-2">
+                  <Upload className="w-8 h-8 text-gray-400" />
+                  <span className="text-sm font-medium text-gray-700">Click or drag to upload image</span>
+                  <span className="text-xs text-gray-500">Max 5MB - JPG, PNG, GIF, WebP</span>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={isSubmitting}
+                  className="hidden"
+                  id="hotel-image-input"
+                  aria-label="Upload hotel image"
+                />
+                <label
+                  htmlFor="hotel-image-input"
+                  className="block mt-3 cursor-pointer"
+                >
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
                     disabled={isSubmitting}
-                    className="hidden"
-                    title="Upload hotel image"
-                  />
+                    className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                  >
+                    Choose Image
+                  </button>
                 </label>
                 {customImagePreview && (
                   <button
                     type="button"
                     onClick={clearCustomImage}
-                    className="mt-2 px-3 py-1 text-sm bg-red-100 text-red-700 hover:bg-red-200 rounded-lg transition-colors"
+                    className="mt-3 w-full px-3 py-1 text-sm bg-red-100 text-red-700 hover:bg-red-200 rounded-lg transition-colors"
                   >
                     Clear custom image
                   </button>
@@ -374,6 +437,7 @@ export default function Edit() {
                       } ${
                         customImagePreview !== null ? 'opacity-50 cursor-not-allowed' : ''
                       }`}
+                      aria-label={`Select preset image ${index + 1}`}
                       title={`Select image ${index + 1}`}
                     >
                       <img

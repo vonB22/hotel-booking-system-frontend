@@ -193,8 +193,7 @@ import authService from '../services/auth';
               className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 font-medium text-sm transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500"
               aria-label="Profile"
               onClick={() => {
-                navigate('/profile');
-                if (isMobile) setCollapsed(true);
+                // Clickable but no navigation
               }}
             >
               <img

@@ -530,7 +530,7 @@ export default function Navbar({ isDashboard = false }: NavbarProps) {
               </h2>
             </div>
             <div className="px-6 py-6">
-              <p className="text-gray-700 leading-relaxed">Are you sure you want to logout? You'll need to login again to access your account.</p>
+              <p className="text-gray-700 leading-relaxed">Are you sure you want to logout?</p>
             </div>
             <div className="border-t border-gray-100 px-6 py-4 flex gap-3 justify-end bg-gray-50">
               <button
