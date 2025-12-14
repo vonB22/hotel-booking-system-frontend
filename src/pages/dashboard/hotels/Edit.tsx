@@ -46,7 +46,6 @@ export default function Edit() {
   const [error, setError] = useState('');
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [customImagePreview, setCustomImagePreview] = useState<string | null>(null);
-  const [customImageFile, setCustomImageFile] = useState<File | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   useEffect(() => {
@@ -161,7 +160,6 @@ export default function Edit() {
     const reader = new FileReader();
     reader.onload = (e) => {
       setCustomImagePreview(e.target?.result as string);
-      setCustomImageFile(file);
     };
     reader.readAsDataURL(file);
     setError('');
