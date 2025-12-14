@@ -85,21 +85,16 @@ export default function Edit() {
         .map(a => a.trim())
         .filter(a => a.length > 0);
 
-      const formDataToSend = new FormData();
-      formDataToSend.append('name', formData.name);
-      formDataToSend.append('detail', formData.detail);
-      formDataToSend.append('location', formData.location);
-      formDataToSend.append('price', String(formData.price));
-      formDataToSend.append('rooms', String(formData.rooms));
-      formDataToSend.append('rating', String(formData.rating));
-      formDataToSend.append('amenities', JSON.stringify(amenitiesList));
-
-      // If custom image was uploaded, append it
-      if (customImageFile) {
-        formDataToSend.append('image', customImageFile);
-      }
-
-      const response = await apiService.updateHotel(id!, formDataToSend as any);
+      // Send as JSON (without image file - backend can use placeholder or URL)
+      const response = await apiService.updateHotel(id!, {
+        name: formData.name,
+        detail: formData.detail,
+        location: formData.location,
+        price: formData.price,
+        rooms: formData.rooms,
+        rating: formData.rating,
+        amenities: amenitiesList,
+      });
 
       console.log('Update response:', response);
 
@@ -107,11 +102,15 @@ export default function Edit() {
         navigate('/hotels');
       } else {
         setError(response.message || 'Failed to update hotel');
+        if (response.errors) {
+          setErrors(response.errors);
+        }
       }
     } catch (err: any) {
       console.error('Update error:', err);
       if (err.errors) {
         setErrors(err.errors);
+        setError('Validation failed. Please check the form fields.');
       } else {
         setError(err.message || 'An error occurred while updating hotel');
       }
@@ -380,7 +379,7 @@ export default function Edit() {
               >
                 <div className="flex flex-col items-center gap-2">
                   <Upload className="w-8 h-8 text-gray-400" />
-                  <span className="text-sm font-medium text-gray-700">Click or drag to upload image</span>
+                  <span className="text-sm font-medium text-gray-700">Click or drag to upload image (preview only)</span>
                   <span className="text-xs text-gray-500">Max 5MB - JPG, PNG, GIF, WebP</span>
                 </div>
                 <input
@@ -412,8 +411,13 @@ export default function Edit() {
                     onClick={clearCustomImage}
                     className="mt-3 w-full px-3 py-1 text-sm bg-red-100 text-red-700 hover:bg-red-200 rounded-lg transition-colors"
                   >
-                    Clear custom image
+                    Clear preview
                   </button>
+                )}
+                {customImagePreview && (
+                  <p className="text-xs text-amber-600 mt-2 text-center">
+                    ℹ️ Preview shown locally. Backend uses preset images only.
+                  </p>
                 )}
               </div>
 
