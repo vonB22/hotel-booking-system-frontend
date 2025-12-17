@@ -1,14 +1,16 @@
 import { useState, useContext } from 'react';
-import { NavigationContext } from '../../../App';
+import { NavigationContext, useAppToast } from '../../../App';
 import { useNavigate } from 'react-router-dom';
 import FormInput from '../../../Components/FormInput';
 import Button from '../../../Components/Button';
 import { ArrowLeft } from 'lucide-react';
 import apiService from '../../../services/api';
+import { navigateWithDelay } from '../../../utils/delayedNavigation';
 
 export default function Create() {
   const { } = useContext(NavigationContext);
   const navigate = useNavigate();
+  const toast = useAppToast();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -38,7 +40,8 @@ export default function Create() {
       const response = await apiService.createUser(submitData as any);
 
       if (response.success) {
-        navigate('/users');
+        toast.success('User created successfully');
+        navigateWithDelay(navigate, '/users');
       } else {
         setError(response.message || 'Failed to create user');
       }

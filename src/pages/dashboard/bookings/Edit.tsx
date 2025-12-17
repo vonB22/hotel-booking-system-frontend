@@ -1,10 +1,11 @@
 import { useState, useContext, useEffect } from 'react';
-import { NavigationContext } from '../../../App';
+import { NavigationContext, useAppToast } from '../../../App';
 import { useNavigate, useParams } from 'react-router-dom';
 import FormInput from '../../../Components/FormInput';
 import Button from '../../../Components/Button';
 import { ArrowLeft } from 'lucide-react';
 import apiService from '../../../services/api';
+import { navigateWithDelay } from '../../../utils/delayedNavigation';
 
 interface Booking {
   id: number;
@@ -21,6 +22,7 @@ interface Booking {
 export default function Edit() {
   const { currentItemId } = useContext(NavigationContext);
   const navigate = useNavigate();
+  const toast = useAppToast();
   const params = useParams();
   const id = params.id || currentItemId;
   const [formData, setFormData] = useState<Booking>({
@@ -88,7 +90,8 @@ export default function Edit() {
 
       console.log('Update response:', response);
       if (response.success) {
-        navigate('/bookings');
+        toast.success('Booking updated successfully');
+        navigateWithDelay(navigate, '/bookings');
       } else {
         setError(response.message || 'Failed to update booking');
         if (response.errors) {

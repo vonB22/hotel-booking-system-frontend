@@ -1,10 +1,11 @@
 import { useState, useContext, useEffect } from 'react';
-import { NavigationContext } from '../../../App';
+import { NavigationContext, useAppToast } from '../../../App';
 import { useNavigate, useParams } from 'react-router-dom';
 import FormInput from '../../../Components/FormInput';
 import Button from '../../../Components/Button';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import apiService from '../../../services/api';
+import { navigateWithDelay } from '../../../utils/delayedNavigation';
 
 interface User {
   id: number;
@@ -19,6 +20,7 @@ interface User {
 export default function Edit() {
   const { currentItemId } = useContext(NavigationContext);
   const navigate = useNavigate();
+  const toast = useAppToast();
   const params = useParams();
   const id = params.id || currentItemId;
   const [formData, setFormData] = useState<User>({
@@ -121,7 +123,8 @@ export default function Edit() {
       console.log('Update response:', response);
       
       if (response.success) {
-        navigate('/users');
+        toast.success('User updated successfully');
+        navigateWithDelay(navigate, '/users');
       } else {
         setError(response.message || 'Failed to update user');
       }

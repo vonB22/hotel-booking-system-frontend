@@ -1,10 +1,11 @@
 import { useState, useContext, useEffect } from 'react';
-import { NavigationContext } from '../../../App';
+import { NavigationContext, useAppToast } from '../../../App';
 import { useNavigate, useParams } from 'react-router-dom';
 import FormInput from '../../../Components/FormInput';
 import Button from '../../../Components/Button';
 import { ArrowLeft, Check } from 'lucide-react';
 import apiService from '../../../services/api';
+import { navigateWithDelay } from '../../../utils/delayedNavigation';
 
 interface Role {
   id: number;
@@ -24,6 +25,7 @@ const AVAILABLE_PERMISSIONS = [
 export default function Edit() {
   const { currentItemId } = useContext(NavigationContext);
   const navigate = useNavigate();
+  const toast = useAppToast();
   const params = useParams();
   const id = params.id || currentItemId;
   const [formData, setFormData] = useState<Role>({
@@ -91,7 +93,8 @@ export default function Edit() {
       const response = await apiService.updateRole(id, submitData);
 
       if (response.success) {
-        navigate('/roles');
+        toast.success('Role updated successfully');
+        navigateWithDelay(navigate, '/roles');
       } else {
         setError(response.message || 'Failed to update role');
       }

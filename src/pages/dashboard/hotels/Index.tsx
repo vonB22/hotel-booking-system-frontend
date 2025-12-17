@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from 'react';
-import { NavigationContext } from '../../../App';
+import { NavigationContext, useAppToast } from '../../../App';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../../Components/Button';
 import { Plus, Eye, Edit, Trash2, Search, Star, X } from 'lucide-react';
@@ -26,6 +26,7 @@ interface Hotel {
 export default function Index() {
   const { setCurrentItemId } = useContext(NavigationContext);
   const navigate = useNavigate();
+  const toast = useAppToast();
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -74,6 +75,7 @@ export default function Index() {
         setIsDeleteModalOpen(false);
         setSelectedId(null);
         setIsDeleting(false);
+        toast.success('Hotel deleted successfully');
       } else {
         setError(response.message || 'Failed to delete hotel');
         setIsDeleting(false);

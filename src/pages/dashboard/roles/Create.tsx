@@ -1,10 +1,11 @@
 import { useState, useContext } from 'react';
-import { NavigationContext } from '../../../App';
+import { NavigationContext, useAppToast } from '../../../App';
 import { useNavigate } from 'react-router-dom';
 import FormInput from '../../../Components/FormInput';
 import Button from '../../../Components/Button';
 import { ArrowLeft, Check } from 'lucide-react';
 import apiService from '../../../services/api';
+import { navigateWithDelay } from '../../../utils/delayedNavigation';
 
 const AVAILABLE_PERMISSIONS = [
   'create',
@@ -18,6 +19,7 @@ const AVAILABLE_PERMISSIONS = [
 export default function Create() {
   const {} = useContext(NavigationContext);
   const navigate = useNavigate();
+  const toast = useAppToast();
   const [formData, setFormData] = useState({ name: '', permissions: [] as string[] });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -47,7 +49,8 @@ export default function Create() {
       const response = await apiService.createRole(submitData);
 
       if (response.success) {
-        navigate('/roles');
+        toast.success('Role created successfully');
+        navigateWithDelay(navigate, '/roles');
       } else {
         setError(response.message || 'Failed to create role');
       }

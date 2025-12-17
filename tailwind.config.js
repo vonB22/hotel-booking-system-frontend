@@ -46,6 +46,15 @@ export default {
         lg: '0.75rem',
         xl: '1rem',
       },
+      keyframes: {
+        slideIn: {
+          from: { transform: 'translateX(400px)', opacity: '0' },
+          to: { transform: 'translateX(0)', opacity: '1' },
+        },
+      },
+      animation: {
+        'slide-in': 'slideIn 0.3s ease-out',
+      },
     },
   },
   plugins: [],

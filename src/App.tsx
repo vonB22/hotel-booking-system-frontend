@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import './styles/global.css';
@@ -13,6 +13,15 @@ export { AuthContext } from './contexts/AuthContext';
 export { NavigationContext } from './contexts/NavigationContext';
 import { AuthContext } from './contexts/AuthContext';
 import { NavigationContext } from './contexts/NavigationContext';
+
+// Toast
+import { useToast, ToastContainer } from './Components/Toast';
+export const ToastContext = createContext<ReturnType<typeof useToast> | null>(null);
+export const useAppToast = () => {
+  const context = useContext(ToastContext);
+  if (!context) throw new Error('useAppToast must be used within ToastProvider');
+  return context;
+};
 
 // Layouts
 import DashboardLayout from './layouts/DashboardLayout';
@@ -388,9 +397,14 @@ function AppContent() {
 }
 
 export default function App() {
+  const toast = useToast();
+  
   return (
     <Router>
-      <AppContent />
+      <ToastContext.Provider value={toast}>
+        <AppContent />
+        <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
+      </ToastContext.Provider>
     </Router>
   );
 }

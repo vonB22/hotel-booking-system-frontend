@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from 'react';
-import { NavigationContext } from '../../../App';
+import { NavigationContext, useAppToast } from '../../../App';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../../Components/Button';
 import { Plus, Eye, Edit, Trash2, Shield } from 'lucide-react';
@@ -16,6 +16,7 @@ interface Role {
 export default function Index() {
   const { setCurrentItemId } = useContext(NavigationContext);
   const navigate = useNavigate();
+  const toast = useAppToast();
   const [roles, setRoles] = useState<Role[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
@@ -80,6 +81,7 @@ export default function Index() {
         setIsDeleteModalOpen(false);
         setSelectedId(null);
         setIsDeleting(false);
+        toast.success('Role deleted successfully');
         fetchRoles();
       } else {
         setDeleteError(response.message || 'Failed to delete role');

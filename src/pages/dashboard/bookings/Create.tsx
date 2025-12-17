@@ -1,10 +1,11 @@
 import { useState, useContext, useEffect } from 'react';
-import { NavigationContext } from '../../../App';
+import { NavigationContext, useAppToast } from '../../../App';
 import { useNavigate } from 'react-router-dom';
 import FormInput from '../../../Components/FormInput';
 import Button from '../../../Components/Button';
 import { ArrowLeft } from 'lucide-react';
 import apiService from '../../../services/api';
+import { navigateWithDelay } from '../../../utils/delayedNavigation';
 
 interface Hotel {
   id: number;
@@ -14,6 +15,7 @@ interface Hotel {
 export default function Create() {
   const {} = useContext(NavigationContext);
   const navigate = useNavigate();
+  const toast = useAppToast();
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [formData, setFormData] = useState({
     product_id: '',
@@ -66,7 +68,8 @@ export default function Create() {
 
       console.log('Create response:', response);
       if (response.success) {
-        navigate('/bookings');
+        toast.success('Booking created successfully');
+        navigateWithDelay(navigate, '/bookings');
       } else {
         setError(response.message || 'Failed to create booking');
       }

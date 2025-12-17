@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Calendar, Users, MapPin, DollarSign, Clock, AlertCircle, CheckCircle, XCircle, ArrowLeft, Hotel, Moon, Trash2 } from 'lucide-react';
 import Navbar from '../../Components/Navbar';
+import { useAppToast } from '../../App';
 import apiService from '../../services/api';
 
 interface Booking {
@@ -22,6 +23,7 @@ interface Booking {
 
 export default function MyBookings() {
   const navigate = useNavigate();
+  const toast = useAppToast();
   const { id } = useParams();
   const [booking, setBooking] = useState<Booking | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -117,6 +119,7 @@ export default function MyBookings() {
         if (booking?.id === bookingId) {
           setBooking({ ...booking, status: 'cancelled' });
         }
+        toast.success('Booking cancelled successfully');
         setCancelModalOpen(false);
         setCancelingBookingId(null);
       } else {

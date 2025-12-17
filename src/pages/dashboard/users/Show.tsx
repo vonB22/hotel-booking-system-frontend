@@ -9,20 +9,31 @@ export default function Show() {
   const { currentItemId } = useContext(NavigationContext);
   const navigate = useNavigate();
   const params = useParams();
+  const id = params.id || currentItemId;
   const [user, setUser] = useState<any | null>(null);
   const [userBookings, setUserBookings] = useState<any[]>([]);
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    const id = params.id || currentItemId || null;
-    if (!id) return;
+    if (!id) {
+      setError('User ID not found');
+      setLoading(false);
+      return;
+    }
+    
     const fetchUserData = async () => {
       try {
+        setLoading(true);
+        setError('');
+        
         // Fetch user details
         const userResponse = await apiService.getUser(id);
         if (userResponse.success && userResponse.data) {
           setUser(userResponse.data);
         } else {
+          setError(userResponse.message || 'Failed to load user');
           setUser(null);
         }
 
@@ -34,16 +45,45 @@ export default function Show() {
         } else {
           setUserBookings([]);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to fetch user data:', err);
+        setError(err.message || 'An error occurred while fetching user');
         setUser(null);
         setUserBookings([]);
+      } finally {
+        setLoading(false);
       }
     };
+    
     fetchUserData();
-  }, [params.id]);
+  }, [id]);
 
-  if (!user) return (<div className="text-center py-8 text-red-600">User not found or failed to load</div>);
+  if (loading) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-600">Loading user details...</p>
+      </div>
+    );
+  }
+
+  if (error || !user) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-4">
+          <button onClick={() => navigate('/users')} title="Back to users" aria-label="Back to users" className="p-2 hover:bg-gray-100 rounded-lg">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div>
+            <h1 className="text-3xl">User Not Found</h1>
+          </div>
+        </div>
+        <div className="p-4 bg-red-100 text-red-700 rounded-lg">
+          {error || 'User not found or failed to load'}
+        </div>
+        <Button onClick={() => navigate('/users')} variant="outline">Back to Users</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -57,7 +97,7 @@ export default function Show() {
             <p className="text-gray-600">User #{user.id}</p>
           </div>
         </div>
-        <Button variant="outline" onClick={() => navigate(`/users/${currentItemId}/edit`)}>Edit User</Button>
+        <Button variant="outline" onClick={() => navigate(`/users/${id}/edit`)}>Edit User</Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

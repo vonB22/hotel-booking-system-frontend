@@ -1,5 +1,6 @@
 import { useContext, useState } from 'react';
 import { AuthContext } from '../../../contexts/AuthContext';
+import { useAppToast } from '../../../App';
 import Button from '../../../Components/Button';
 import FormInput from '../../../Components/FormInput';
 import { User, Mail, Lock, Edit2, Save, X, Moon, Sun, Trash2, AlertTriangle } from 'lucide-react';
@@ -8,6 +9,7 @@ import apiService from '../../../services/api';
 
 export default function Index() {
   const auth = useContext(AuthContext);
+  const toast = useAppToast();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
@@ -112,6 +114,7 @@ export default function Index() {
       });
 
       if (response.success) {
+        toast.success('Profile updated successfully');
         setSuccess('Profile updated successfully!');
         setIsEditing(false);
         // Refresh user data
@@ -148,6 +151,7 @@ export default function Index() {
       });
 
       if (response.success) {
+        toast.success('Password changed successfully');
         setSuccess('Password changed successfully!');
         setFormData(prev => ({
           ...prev,

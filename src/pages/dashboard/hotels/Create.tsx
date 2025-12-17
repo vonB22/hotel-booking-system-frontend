@@ -1,10 +1,11 @@
 import { useState, useContext } from 'react';
-import { NavigationContext } from '../../../App';
+import { NavigationContext, useAppToast } from '../../../App';
 import { useNavigate } from 'react-router-dom';
 import FormInput from '../../../Components/FormInput';
 import Button from '../../../Components/Button';
 import { ArrowLeft, Upload } from 'lucide-react';
 import apiService from '../../../services/api';
+import { navigateWithDelay } from '../../../utils/delayedNavigation';
 import img1 from '../../../assets/img/hotels/img1.jpg';
 import img2 from '../../../assets/img/hotels/img2.jpg';
 import img3 from '../../../assets/img/hotels/img3.jpg';
@@ -15,6 +16,7 @@ import img6 from '../../../assets/img/hotels/img6.jpg';
 export default function Create() {
   const {} = useContext(NavigationContext);
   const navigate = useNavigate();
+  const toast = useAppToast();
   const hotelImages = [img1, img2, img3, img4, img5, img6];
   const [selectedImageIndex, setSelectedImageIndex] = useState(Math.floor(Math.random() * hotelImages.length));
   const [customImagePreview, setCustomImagePreview] = useState<string | null>(null);
@@ -85,7 +87,8 @@ export default function Create() {
       console.log('Create response:', response);
 
       if (response.success) {
-        navigate('/hotels');
+        toast.success('Hotel created successfully');
+        navigateWithDelay(navigate, '/hotels');
       } else {
         setError(response.message || 'Failed to create hotel');
       }

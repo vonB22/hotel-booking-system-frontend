@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from 'react';
-import { NavigationContext } from '../../../App';
+import { NavigationContext, useAppToast } from '../../../App';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../../Components/Button';
 import { Plus, Eye, Edit, Trash2, Search } from 'lucide-react';
@@ -30,6 +30,7 @@ interface Booking {
 export default function Index() {
   const { setCurrentItemId } = useContext(NavigationContext);
   const navigate = useNavigate();
+  const toast = useAppToast();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -79,6 +80,7 @@ export default function Index() {
         setIsDeleteModalOpen(false);
         setSelectedId(null);
         setIsDeleting(false);
+        toast.success('Booking deleted successfully');
       } else {
         setError(response.message || 'Failed to delete booking');
         setIsDeleting(false);
