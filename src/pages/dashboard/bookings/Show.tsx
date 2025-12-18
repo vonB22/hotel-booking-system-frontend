@@ -177,8 +177,8 @@ export default function Show() {
   }
 
   const nights = calculateNights(booking.check_in, booking.check_out);
-  const pricePerNight = booking.product?.price || 0;
-  const totalPrice = booking.total_price || (pricePerNight * nights);
+  const pricePerNight = parseFloat(String(booking.product?.price || 0));
+  const totalPrice = parseFloat(String(booking.total_price || (pricePerNight * nights)));
 
   return (
     <div className="space-y-6">
